@@ -12,8 +12,6 @@
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
-#define BYTES_VAL_T unsigned int  //Altera de int para long, se o a quantidade de CIs cascateados for maior que 2
-
 
 // Declaração de constantes globais 74HC165
 const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
@@ -26,21 +24,20 @@ const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), regist
 const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
 const int dataPin595 = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
-//inicialização das variaveis onde serão armazenados os status
-BYTES_VAL_T pinValues[nCIs];
-BYTES_VAL_T oldPinValues[nCIs];
-BYTES_VAL_T pinValuesOut[nCIs];
-BYTES_VAL_T oldPinValuesOut[nCIs];
+//inicialização dos vetores onde serão armazenados os bytes
+byte pinValues[nCIs];
+byte oldPinValues[nCIs];
+byte pinValuesOut[nCIs];
+byte oldPinValuesOut[nCIs];
 
-//Função para definir um rotina shift-in, lê os dados do 74HC165
+//Função para leitura dos dados do 74HC165
 void read_shift_regs(){
     bool bitVal=0; //variavel para que armazena bit a bit
-    BYTES_VAL_T bytesVal[nCIs];
-    BYTES_VAL_T bytesValOut[nCIs];
+    byte bytesVal[nCIs];
+    byte bytesValOut[nCIs];
     for(int i = 0; i < nCIs; i++){
         bytesVal[i] = 0;
         bytesValOut[i] = pinValuesOut[i];
-
     }
 
     //desloca todos os bits para o pino de dados para leitura
@@ -50,8 +47,7 @@ void read_shift_regs(){
     digitalWrite(ploadPin165, HIGH);
     digitalWrite(clockEnablePin165, LOW);
 
-    // Efetua a leitura de um bit da saida serial do 74HC165
-
+    // Efetua a leitura dos bits da saida serial do 74HC165
     for(int i = 0; i < nCIs; i++){
         for (int j = 0; j < BYTES; j++){
             bitVal = digitalRead(dataPin165);
@@ -69,7 +65,7 @@ void read_shift_regs(){
         }
         pinValues[nCIs-1-i] = bytesVal[nCIs-1-i];
 
-        //condição para somente alterar as saídas se soltar o botão
+        //altera somente uma vez a saida com o botao pressionado
         if(pinValues[nCIs-1-i] != oldPinValues[nCIs-1-i]){
             pinValuesOut[nCIs-1-i] = bytesValOut[nCIs-1-i];
         }
@@ -129,7 +125,7 @@ void setup()
     pinMode(clockPin595, OUTPUT);
     pinMode(dataPin595, OUTPUT);
 
-    //Lê e mostra o estado dos pinos
+    //inicializa com as saidas desligadas
     for(int i = 0; i < nCIs; i++){
         pinValues[i] = 0;
         oldPinValues[i] = 0;
@@ -137,14 +133,15 @@ void setup()
         oldPinValuesOut[i] = 0;    
     }
 
+    //altera as saidas para desligadas
     alteraSaida();
+    //mostra no monitor
     display_pin_values();
 }
 
 //Função do loop principal
 void loop(){
     //Lê todos as portas externas
-
     read_shift_regs();
     
     //Se houver modificação no estado dos pinos, mostra o estado atual
