@@ -1,13 +1,13 @@
 /********************************************************************************\
- * Programa Expansão de Entradas e saídas do Arduino, utilizando Shift Register *
- * CI utilizado: 74HC165 com 74HC595                                            *
+ * Expansão de Entradas e saídas do Arduino, utilizando Shift Register          *
+ * CI utilizado: 74HC165 e 74HC595                                              *
  * Por: Elton Barbosa Gomes                                                     *
- * Data: 28/09/2020                                                             *
+ * Data: 15/01/2020                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
 
 //74hc165
-// Definições de Labels
+// Definições de constantes
 #define nCIs  1               //Registra o número de CIs cascateados
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
@@ -15,27 +15,22 @@
 #define BYTES_VAL_T unsigned int  //Altera de int para long, se o a quantidade de CIs cascateados for maior que 2
 
 
-// Declaração de variáveis globais 165
-const int ploadPin165        = 6;    //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
-const int clockEnablePin165  = 5;    //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
+// Declaração de constantes globais 74HC165
+const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
+const int clockEnablePin165  = 5;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
 const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial output from the last stage)(Q7)
 const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
+
+// Declaração de constantes globais 74HC595
+const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
+const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
+const int dataPin595 = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
 //inicialização das variaveis onde serão armazenados os status
 BYTES_VAL_T pinValues[nCIs];
 BYTES_VAL_T oldPinValues[nCIs];
 BYTES_VAL_T pinValuesOut[nCIs];
 BYTES_VAL_T oldPinValuesOut[nCIs];
-
-
-// Declaração de variáveis globais 595
-int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
-int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
-int dataPin595 = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
-
-//DEBUG
-int statusI;
-
 
 //Função para definir um rotina shift-in, lê os dados do 74HC165
 void read_shift_regs(){
