@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<module fritzingVersion="0.7.4b.04.10.5970" referenceFile="songle_relay__816891ea98d82b0aed6dbb1a91d95bf7.fzp" moduleId="srd-05vdc-sl-c_dc21145aeb3a9b7795b759b0f0fab330_2">
+ <author>BASE</author>
+ <title>songle relay</title>
+ <date>di okt 27 2015</date>
+ <tags/>
+ <properties>
+  <property name="family">relay</property>
+  <property name="variant">variant 2</property>
+  <property name="part number"></property>
+  <property name="layer"></property>
+ </properties>
+ <views>
+  <iconView>
+   <layers image="icon/srd-05vdc-sl-c_ec918ab6e44709d644d51068bfbbba62_1_icon.svg">
+    <layer layerId="icon"/>
+   </layers>
+  </iconView>
+  <breadboardView>
+   <layers image="breadboard/srd-05vdc-sl-c_ec918ab6e44709d644d51068bfbbba62_1_breadboard.svg">
+    <layer layerId="breadboard"/>
+   </layers>
+  </breadboardView>
+  <schematicView>
+   <layers image="schematic/srd-05vdc-sl-c_ec918ab6e44709d644d51068bfbbba62_1_schematic.svg">
+    <layer layerId="schematic"/>
+   </layers>
+  </schematicView>
+  <pcbView>
+   <layers image="pcb/srd-05vdc-sl-c_ec918ab6e44709d644d51068bfbbba62_1_pcb.svg">
+    <layer layerId="copper0"/>
+    <layer layerId="copper1"/>
+   </layers>
+  </pcbView>
+ </views>
+ <connectors>
+  <connector id="connector3" name="NC" type="male">
+   <description>NC</description>
+   <views>
+    <breadboardView>
+     <p layer="breadboard" terminalId="connector3terminal" svgId="connector3"/>
+    </breadboardView>
+    <schematicView>
+     <p layer="schematic" svgId="connector3"/>
+    </schematicView>
+    <pcbView>
+     <p layer="copper1" svgId="connector3pin"/>
+     <p layer="copper0" svgId="connector3pin"/>
+    </pcbView>
+   </views>
+  </connector>
+  <connector id="connector4" name="COMMON" type="male">
+   <description>COMMON</description>
+   <views>
+    <breadboardView>
+     <p layer="breadboard" terminalId="connector4terminal" svgId="connector4"/>
+    </breadboardView>
+    <schematicView>
+     <p layer="schematic" svgId="connector4"/>
+    </schematicView>
+    <pcbView>
+     <p layer="copper1" svgId="connector4pin"/>
+     <p layer="copper0" svgId="connector4pin"/>
+    </pcbView>
+   </views>
+  </connector>
+  <connector id="connector5" name="GND" type="male">
+   <description>GND</description>
+   <views>
+    <breadboardView>
+     <p layer="breadboard" terminalId="connector5terminal" svgId="connector5"/>
+    </breadboardView>
+    <schematicView>
+     <p layer="schematic" svgId="connector5"/>
+    </schematicView>
+    <pcbView>
+     <p layer="copper1" svgId="connector5pin"/>
+     <p layer="copper0" svgId="connector5pin"/>
+    </pcbView>
+   </views>
+  </connector>
+  <connector id="connector0" name="VCC" type="male">
+   <description>5V VCC</description>
+   <views>
+    <breadboardView>
+     <p layer="breadboard" terminalId="connector0terminal" svgId="connector0"/>
+    </breadboardView>
+    <schematicView>
+     <p layer="schematic" svgId="connector0"/>
+    </schematicView>
+    <pcbView>
+     <p layer="copper1" svgId="connector0pin"/>
+     <p layer="copper0" svgId="connector0pin"/>
+    </pcbView>
+   </views>
+  </connector>
+  <connector id="connector2" name="NO" type="male">
+   <description>NO</description>
+   <views>
+    <breadboardView>
+     <p layer="breadboard" terminalId="connector2terminal" svgId="connector2"/>
+    </breadboardView>
+    <schematicView>
+     <p layer="schematic" terminalId="connector2terminal" svgId="connector2"/>
+    </schematicView>
+    <pcbView>
+     <p layer="copper1" svgId="connector2pin"/>
+     <p layer="copper0" svgId="connector2pin"/>
+    </pcbView>
+   </views>
+  </connector>
+ </connectors>
+</module>

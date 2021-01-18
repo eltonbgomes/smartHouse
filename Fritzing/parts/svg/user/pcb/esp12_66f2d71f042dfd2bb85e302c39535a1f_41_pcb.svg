@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns="http://www.w3.org/2000/svg"  version="1.1" height="25mm" id="svg8187" viewBox="0 0 67.322835 88.582677" width="19mm" gorn="0">
+    <desc >
+        <referenceFile >ESP-12_pcb.svg</referenceFile>
+    </desc>
+    <defs  id="defs8189"/>
+    <metadata  id="metadata8192">
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            <cc:Work rdf:about="" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#">
+                <dc:format xmlns:dc="http://purl.org/dc/elements/1.1/">image/svg+xml</dc:format>
+                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+                <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/"/>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
+    <g  transform="translate(0,3.5433071)">
+        <g >
+            <g  id="silkscreen" style="display:inline" gorn="0.3.0.0">
+                <rect stroke="#ffffff" stroke-width="0.36122313"  fill="none" height="88.221451" fill-opacity="1" x="0.18061157" id="rect9054" y="-3.3626955" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none;" stroke-opacity="1" width="66.961617" gorn="0.3.0.0.0"/>
+            </g>
+        </g>
+    </g>
+    <g  transform="translate(0,-963.77952)">
+        <g >
+            <g  id="copper1" style="display:inline" gorn="0.4.0.0">
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1047.0472" id="connector18pin" style="stroke-miterlimit:0;stroke-dasharray:none" width="7.0866146" gorn="0.4.0.0.0"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1039.9607" id="connector12pin" style="stroke-miterlimit:0;stroke-dasharray:none" width="7.0866146" gorn="0.4.0.0.1"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1032.874" id="connector11pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866151" gorn="0.4.0.0.2"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1025.7875" id="connector10pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866156" gorn="0.4.0.0.3"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1018.7008" id="connector4pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.086616" gorn="0.4.0.0.4"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1011.6142" id="connector6pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866146" gorn="0.4.0.0.5"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="1004.5276" id="connector9pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866146" gorn="0.4.0.0.6"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="1.7716535" y="997.44098" id="connector16pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866151" gorn="0.4.0.0.7"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1047.0472" id="connector7pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866132" gorn="0.4.0.0.8"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1039.9607" id="connector15pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866132" gorn="0.4.0.0.9"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1032.8741" id="connector5pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866137" gorn="0.4.0.0.10"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1025.7875" id="connector3pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866141" gorn="0.4.0.0.11"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1018.7009" id="connector14pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866146" gorn="0.4.0.0.12"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1011.6143" id="connector13pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866132" gorn="0.4.0.0.13"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="1004.5277" id="connector17pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866132" gorn="0.4.0.0.14"/>
+                <rect stroke="none" stroke-width="0"  fill="#f7bd13" height="3.5433071" fill-opacity="1" x="58.464569" y="997.44104" id="connector8pin" style="display:inline;stroke-miterlimit:0;stroke-dasharray:none" width="7.0866137" gorn="0.4.0.0.15"/>
+            </g>
+        </g>
+    </g>
+</svg>

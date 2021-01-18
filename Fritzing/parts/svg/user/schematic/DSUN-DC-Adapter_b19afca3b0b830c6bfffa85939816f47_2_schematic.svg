@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 35.999999 14.4" height="0.2in" id="svg2" x="0in" y="0in" version="1.2" gorn="0" width="0.5in">
+    <metadata  id="metadata5881">
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            <cc:Work rdf:about="" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#">
+                <dc:format xmlns:dc="http://purl.org/dc/elements/1.1/">image/svg+xml</dc:format>
+                <dc:type xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+                <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/"/>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
+    <defs  id="defs5879"/>
+    <desc  id="desc5859">
+        <referenceFile >generic_male_pin_header_2_100mil_schem.svg</referenceFile>
+    </desc>
+    <g  id="schematic" gorn="0.3">
+        <line stroke="#000000"  fill="none" id="connector4pin" stroke-width="0.69999999" y1="3.5999999" y2="3.5999999" style="stroke-linecap:round;stroke-linejoin:round" x1="21.150003" x2="28.271004" gorn="0.3.0"/>
+        <rect  height="0.208" id="connector0terminal" x="20.527002" y="3.5039999" style="fill:none" gorn="0.3.1" width="0.546"/>
+        <g  transform="translate(20.8,0)">
+            <g >
+                <g >
+                    <g >
+                        <polyline stroke="#000000"  points="9.898,1.643 14.1,3.6 9.898,5.556" fill="none" id="polyline5864" stroke-width="0.69999999" style="stroke-linecap:round;stroke-linejoin:round" gorn="0.3.2.0.0.0.0"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000"  fill="none" id="line" stroke-width="0.69999999" y1="3.5999999" y2="3.5999999" style="stroke-linecap:round;stroke-linejoin:round" x1="34.900002" x2="25.581003" gorn="0.3.3"/>
+        <text stroke="none"  fill="#8c8c8c" id="text5867" stroke-width="0" x="25.850004" y="2.5799999" style="font-family:Droid Sans;text-anchor:middle;" gorn="0.3.4" font-size="2" class="text">3</text>
+        <line stroke="#000000"  fill="none" id="connector3pin" stroke-width="0.69999999" y1="10.8" y2="10.8" style="stroke-linecap:round;stroke-linejoin:round" x1="21.150003" x2="28.271004" gorn="0.3.5"/>
+        <rect  height="0.208" id="connector1terminal" x="20.527002" y="10.704" style="fill:none" gorn="0.3.6" width="0.546"/>
+        <g  transform="translate(20.8,0)">
+            <g >
+                <g >
+                    <g >
+                        <polyline stroke="#000000"  points="9.898,8.843 14.1,10.8 9.898,12.756" fill="none" id="polyline5871" stroke-width="0.69999999" style="stroke-linecap:round;stroke-linejoin:round" gorn="0.3.7.0.0.0.0"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000"  fill="none" id="line5873" stroke-width="0.69999999" y1="10.8" y2="10.8" style="stroke-linecap:round;stroke-linejoin:round" x1="34.900002" x2="25.581003" gorn="0.3.8"/>
+        <text stroke="none"  fill="#8c8c8c" id="text5875" stroke-width="0" x="25.850004" y="9.7799997" style="font-family:Droid Sans;text-anchor:middle;" gorn="0.3.9" font-size="2" class="text">4</text>
+        <line stroke="#000000"  fill="none" id="connector1pin" stroke-width="0.69999999" y1="3.4881399" y2="3.4881399" style="stroke-linecap:round;stroke-linejoin:round" x1="14.829124" x2="7.7081256" gorn="0.3.10"/>
+        <g  transform="scale(-1,1)">
+            <g >
+                <g >
+                    <g >
+                        <rect  height="0.20799999" id="connector0terminal-3" x="-15.452126" y="3.3921411" style="fill:none" gorn="0.3.11.0.0.0.0" width="0.546"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g  transform="matrix(-1,0,0,1,15.17913,-0.11185765)">
+            <g >
+                <g >
+                    <g >
+                        <polyline stroke="#000000"  points="9.898,1.643 14.1,3.6 9.898,5.556" fill="none" id="polyline5864-5" stroke-width="0.69999999" style="stroke-linecap:round;stroke-linejoin:round" gorn="0.3.12.0.0.0.0"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000"  fill="none" id="line-9" stroke-width="0.69999999" y1="3.4881399" y2="3.4881399" style="stroke-linecap:round;stroke-linejoin:round" x1="1.0791287" x2="10.398125" gorn="0.3.13"/>
+        <text stroke="none"  fill="#8c8c8c" id="text5867-1" stroke-width="0" x="10.097384" y="2.4681413" style="font-family:Droid Sans;text-anchor:middle;" gorn="0.3.14" font-size="2" class="text">1</text>
+        <line stroke="#000000"  fill="none" id="connector0pin" stroke-width="0.69999999" y1="10.688139" y2="10.688139" style="stroke-linecap:round;stroke-linejoin:round" x1="14.829124" x2="7.7081256" gorn="0.3.15"/>
+        <g  transform="scale(-1,1)">
+            <g >
+                <g >
+                    <g >
+                        <rect  height="0.20799999" id="connector1terminal-3" x="-15.452126" y="10.59214" style="fill:none" gorn="0.3.16.0.0.0.0" width="0.546"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g  transform="matrix(-1,0,0,1,15.17913,-0.11185765)">
+            <g >
+                <g >
+                    <g >
+                        <polyline stroke="#000000"  points="9.898,8.843 14.1,10.8 9.898,12.756" fill="none" id="polyline5871-0" stroke-width="0.69999999" style="stroke-linecap:round;stroke-linejoin:round" gorn="0.3.17.0.0.0.0"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000"  fill="none" id="line5873-0" stroke-width="0.69999999" y1="10.688139" y2="10.688139" style="stroke-linecap:round;stroke-linejoin:round" x1="1.0791287" x2="10.398125" gorn="0.3.18"/>
+        <text stroke="none"  fill="#8c8c8c" id="text5875-7" stroke-width="0" x="10.097384" y="9.6681395" style="font-family:Droid Sans;text-anchor:middle;" gorn="0.3.19" font-size="2" class="text">2</text>
+    </g>
+</svg>

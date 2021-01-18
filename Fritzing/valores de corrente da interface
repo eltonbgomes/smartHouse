@@ -1,0 +1,6 @@
+corrente na base = 750uA
+corrente no coletor com rele ligado em 12 V = 28,3mA
+corrente da saida do 74hc595 com led ligado e rele = 12,6mA
+corrente da saida do 74hc595 com led desligado e rele = 820uA
+fonte de 2A 12V
+fonte de 1A 5V

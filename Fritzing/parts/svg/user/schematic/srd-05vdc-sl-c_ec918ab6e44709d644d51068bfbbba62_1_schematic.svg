@@ -1,0 +1,368 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE svg>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg xmlns="http://www.w3.org/2000/svg" id="svg2" x="0px" y="0px" height="0.752958in" viewBox="0 0 66.614 54.213" xml:space="preserve" gorn="0" width="0.925194in" enable-background="new 0 0 66.614 54.213" xmlns:xml="http://www.w3.org/XML/1998/namespace"  version="1.1">
+    <desc >
+        <referenceFile >songle_relay__816891ea98d82b0aed6dbb1a91__schematic__1d3ece94d635bce73fef2c659138797b.svg</referenceFile>
+    </desc>
+    <g id="schematic" gorn="0.1" >
+        <path d="M54.092,15.97c-1.467-0.007-2.652,1.244-2.66,2.798c-0.008,1.551,1.166,2.815,2.635,2.822c-1.469-0.007-2.654,1.247-2.662,2.798c-0.006,1.552,1.168,2.815,2.635,2.822c-1.467-0.007-2.652,1.246-2.66,2.796c-0.008,1.548,1.176,2.813,2.643,2.82c-1.467-0.007-2.662,1.248-2.668,2.798c-0.008,1.551,1.166,2.815,2.633,2.822" id="path4" stroke="#000000" stroke-linejoin="round" stroke-miterlimit="12" stroke-width="0.8974" gorn="0.1.0" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.43613604,-0.00203543,0.00215418,-0.46158034,52.642584,36.638448)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <polyline id="polyline8" stroke="#000000" stroke-linejoin="round" points="-18.525,22.368 4.744,22.357 33.171,12.241 " stroke-width="2" gorn="0.1.1.0.0.0.0.0.0.0.0.0.0.0" stroke-linecap="round" fill="none" />
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line id="line10" stroke="#000000" y1="48.444" y2="43.429" stroke-width="0.8974" x1="2.606" x2="2.629" gorn="0.1.2" stroke-linecap="round" fill="none" />
+        <line id="line12" stroke="#000000" y1="48.81" y2="38.5" stroke-width="0.8974" x1="54.032" x2="54.081" gorn="0.1.3" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.3630076,-0.00203543,0.00179298,-0.46158034,47.01357,36.638448)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <polyline id="polyline14" stroke="#000000" stroke-linejoin="round" points="122.801,-15.334 50.073,-15.335 50.075,7.908 26.326,7.906 " stroke-width="2" gorn="0.1.4.0.0.0.0.0.0.0.0.0.0.0" stroke-linecap="round" fill="none" />
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g transform="matrix(-0.43613604,-0.00203543,0.00215418,-0.46158034,53.048868,43.504195)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(0.0048 -1 1 0.0048 -12.5855 82.5054)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <ellipse id="path2400" cx="35.16" cy="47.576" gorn="0.1.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0" rx="1.214" ry="1.146" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g transform="matrix(-0.43613604,-0.00203543,0.00215418,-0.46158034,53.048868,43.504195)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <ellipse id="path2402" cx="35.161" cy="22.813" gorn="0.1.6.0.0.0.0.0.0.0.0.0.0.0" rx="1.147" ry="1.214" />
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g transform="matrix(-0.36119763,-0.00203543,0.00178404,-0.46158034,46.866885,36.638448)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <polyline id="polyline18" stroke="#000000" stroke-linejoin="round" points="122.501,56.018 49.773,56.02 49.775,32.777 26.023,32.776 " stroke-width="2" gorn="0.1.7.0.0.0.0.0.0.0.0.0.0.0" stroke-linecap="round" fill="none" />
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line id="line20" stroke="#000000" y1="5.736" y2="16.047" stroke-width="0.8974" x1="54.233" x2="54.184" gorn="0.1.8" stroke-linecap="round" fill="none" />
+        <line id="line22" stroke="#000000" y1="5.37" y2="10.387" stroke-width="0.8974" x1="2.806" x2="2.782" gorn="0.1.9" stroke-linecap="round" fill="none" />
+        <line stroke="#000000" y1="53.298" y2="48.633" stroke-width="0.8974" x1="2.582" x2="2.604" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.99998911,-0.00466692,0.00466692,-0.99998911,0,0)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(1 -0.0047 0.0047 1 0.2491 -0.0138)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <rect x="-2.885" y="-53.418" height="0.119" width="0.114" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000" y1="53.664" y2="49.201" stroke-width="0.8974" x1="54.008" x2="54.03" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.99998911,-0.00466692,0.00466692,-0.99998911,0,0)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(1 -0.0047 0.0047 1 0.2491 -0.2539)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <rect x="-54.309" y="-53.544" height="0.119" width="0.113" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g transform="matrix(-0.99998911,-0.00466692,0.00466692,-0.99998911,0,0)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(1 -0.0047 0.0047 1 0.1214 -0.2846)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <rect x="-60.955" y="-26.153" height="0.027" width="0.113" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000" y1="0.883" y2="5.346" stroke-width="0.8974" x1="54.256" x2="54.235" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.99998911,-0.00466692,0.00466692,-0.99998911,0,0)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(1 -0.0047 0.0047 1 0.002 -0.2533)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <rect x="-54.309" y="-0.617" height="0.12" width="0.115" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <line stroke="#000000" y1="0.517" y2="5.181" stroke-width="0.8974" x1="2.828" x2="2.807" stroke-linecap="round" fill="none" />
+        <g transform="matrix(-0.99998911,-0.00466692,0.00466692,-0.99998911,0,0)" >
+            <g >
+                <g >
+                    <g >
+                        <g >
+                            <g >
+                                <g >
+                                    <g >
+                                        <g >
+                                            <g >
+                                                <g >
+                                                    <g transform="matrix(1 -0.0047 0.0047 1 0.002 -0.0132)" >
+                                                        <g >
+                                                            <g >
+                                                                <g >
+                                                                    <g >
+                                                                        <g >
+                                                                            <g >
+                                                                                <g >
+                                                                                    <g >
+                                                                                        <rect x="-2.885" y="-0.491" height="0.12" width="0.113" />
+                                                                                    </g>
+                                                                                </g>
+                                                                            </g>
+                                                                        </g>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <rect x="2.496" y="2.853" height="0.003" width="0.004" fill="none" />
+        <rect id="connector0terminal" x="54.391" y="2.853" height="0.003" gorn="0.1.20" width="0.002" fill="none" />
+        <rect id="connector5terminal" x="54.213" y="51.538" height="0.003" gorn="0.1.21" width="0.002" fill="none" />
+        <rect id="connector4terminal" x="60.633" y="26.393" height="0.002" gorn="0.1.22" width="0.002" fill="none" />
+        <rect id="connector3terminal" x="2.496" y="51.182" height="0.002" gorn="0.1.23" width="0.004" fill="none" />
+        <rect id="connector3" y="48.684" height="5" gorn="0.1.24" width="5" fill="none" />
+        <rect id="connector4" x="58.135" y="23.895" height="5" gorn="0.1.25" width="5" fill="none" />
+        <rect id="connector5" x="51.715" y="49.041" height="5" gorn="0.1.26" width="5" fill="none" />
+        <rect id="connector0" x="51.893" y="0.356" height="5" gorn="0.1.27" width="5" fill="none" />
+        <rect id="connector2" y="0.356" height="5" gorn="0.1.28" width="5" fill="none" />
+        <rect id="connector2terminal" stroke="none" x="2.43816" y="2.851" stroke-width="0" height="0.01" gorn="0.1.29" width="0.01" fill="none" />
+    </g>
+</svg>

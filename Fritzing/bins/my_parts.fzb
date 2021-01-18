@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module fritzingVersion="0.9.4.2019-12-01.CD-498" icon="Mine.png">
+    <title>My Parts</title>
+    <instances>
+        <instance moduleIdRef="srd-05vdc-sl-c_dc21145aeb3a9b7795b759b0f0fab330_2" modelIndex="85413956" path="/home/elton/Documentos/Fritzing/parts/user/srd-05vdc-sl-c_dc21145aeb3a9b7795b759b0f0fab330_2.fzp">
+            <views/>
+        </instance>
+        <instance moduleIdRef="DSUN-DC-Adapter_8e7a708c7cfd7e82c35b66b6e0bab820_2" modelIndex="85413958" path="/home/elton/Documentos/Fritzing/parts/user/DSUN-DC-Adapter_8e7a708c7cfd7e82c35b66b6e0bab820_2.fzp">
+            <views/>
+        </instance>
+        <instance moduleIdRef="ESP8266_module_bc088f959107ee9cbc41323a689b1771_1" modelIndex="85413960" path="/home/elton/Documentos/Fritzing/parts/user/ESP8266_module_bc088f959107ee9cbc41323a689b1771_1.fzp">
+            <views/>
+        </instance>
+        <instance moduleIdRef="esp12_66f2d71f042dfd2bb85e302c39535a1f_41" modelIndex="85413962" path="/home/elton/Documentos/Fritzing/parts/user/esp12_66f2d71f042dfd2bb85e302c39535a1f_41.fzp" flippedSMD="true">
+            <views/>
+        </instance>
+        <instance moduleIdRef="prefix0000_6511b84ff36ddaa3625c680ce67ac5b5_1" modelIndex="85413964" path="/home/elton/Documentos/Fritzing/parts/user/prefix0000_6511b84ff36ddaa3625c680ce67ac5b5_1.fzp">
+            <views/>
+        </instance>
+        <instance moduleIdRef="74HC73_b63df254cb2b3c9974f10b142e42c4f2_1" modelIndex="85416569" path="/home/elton/Documentos/Fritzing/parts/user/74HC73_b63df254cb2b3c9974f10b142e42c4f2_1.fzp">
+            <views/>
+        </instance>
+    </instances>
+</module>
