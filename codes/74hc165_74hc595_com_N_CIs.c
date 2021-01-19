@@ -1,7 +1,7 @@
 /********************************************************************************\
  * Expansão de Entradas e saídas do Arduino, utilizando Shift Register          *
  * CI utilizado: 74HC165 e 74HC595                                              *
- * Por: Elton Barbosa Gomes                                                     *
+ * Autor: Elton Barbosa Gomes                                                     *
  * Data: 15/01/2020                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
