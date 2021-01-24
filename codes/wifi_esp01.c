@@ -1,7 +1,7 @@
 #include "WiFiEsp.h" //INCLUSÃO DA BIBLIOTECA
 #include "SoftwareSerial.h"//INCLUSÃO DA BIBLIOTECA
 
-const int LED = 11;
+const int LED = 13;
 
 SoftwareSerial Serial1(10, 9); //PINOS QUE EMULAM A SERIAL, ONDE O PINO 9 É O RX E O PINO 10 É O TX
 
@@ -24,7 +24,7 @@ void setup(){
 	Serial.begin(9600); //INICIALIZA A SERIAL
 	Serial1.begin(9600); //INICIALIZA A SERIAL PARA O ESP8266
 	WiFi.init(&Serial1); //INICIALIZA A COMUNICAÇÃO SERIAL COM O ESP8266
-	WiFi.config(IPAddress(192,168,0,220)); //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR
+	WiFi.config(IPAddress(192,168,0,110)); //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR
 
 	//INÍCIO - VERIFICA SE O ESP8266 ESTÁ CONECTADO AO ARDUINO, CONECTA A REDE SEM FIO E INICIA O WEBSERVER
 	if(WiFi.status() == WL_NO_SHIELD){
@@ -45,14 +45,14 @@ void sendHttpResponse(WiFiEspClient client){
 	client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
 	client.println("<html>"); //ABRE A TAG "html"
 	client.println("<head>"); //ABRE A TAG "head"
-	client.println("<link rel='icon' type='image/png' href='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/icon_mws.png'/>"); //DEFINIÇÃO DO ICONE DA PÁGINA
-	client.println("<link rel='stylesheet' type='text/css' href='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/webpagecss.css' />"); //REFERENCIA AO ARQUIVO CSS (FOLHAS DE ESTILO)
-	client.println("<title>MasterWalker Shop - Modulo WiFi ESP8266 para Arduino</title>"); //ESCREVE O TEXTO NA PÁGINA
+	//client.println("<link rel='icon' type='image/png' href='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/icon_mws.png'/>"); //DEFINIÇÃO DO ICONE DA PÁGINA
+	//client.println("<link rel='stylesheet' type='text/css' href='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/webpagecss.css' />"); //REFERENCIA AO ARQUIVO CSS (FOLHAS DE ESTILO)
+	client.println("<title>Modulo WiFi ESP8266 para Arduino</title>"); //ESCREVE O TEXTO NA PÁGINA
 	client.println("</head>"); //FECHA A TAG "head"
 
 	//AS LINHAS ABAIXO CRIAM A PÁGINA HTML
 	client.println("<body>"); //ABRE A TAG "body"
-	client.println("<img alt='masterwalkershop' src='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/logo_mws.png' height='156' width='700' />"); //LOGO DA MASTERWALKER SHOP
+	//client.println("<img alt='masterwalkershop' src='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/logo_mws.png' height='156' width='700' />"); //LOGO DA MASTERWALKER SHOP
 	client.println("<p style='line-height:2'><font>Modulo WiFi ESP8266 para Arduino</font></p>"); //ESCREVE O TEXTO NA PÁGINA
 	client.println("<font>ESTADO ATUAL DO LED</font>"); //ESCREVE O TEXTO NA PÁGINA
   

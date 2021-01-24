@@ -6,9 +6,25 @@
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
 
+#include <SPI.h> //INCLUSÃO DE BIBLIOTECA
+#include <Ethernet.h> //INCLUSÃO DE BIBLIOTECA
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; //ATRIBUIÇÃO DE ENDEREÇO MAC AO ETHERNET SHIELD W5100
+byte ip[] = { 192, 168, 0, 110 }; //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR. EX: 192.168.1.110  **** ISSO VARIA, NO MEU CASO É: 192.168.0.175
+byte gateway[] = {192, 168, 0, 1}; //GATEWAY DE CONEXÃO (ALTERE PARA O GATEWAY DO SEU ROTEADOR)
+byte subnet[] = {255, 255, 255, 0}; //MASCARA DE REDE (ALTERE PARA A SUA MÁSCARA DE REDE)
+EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
+
+String readString = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+
+String indice_C = String(30);
+int indice_C_int = 9;
+int indice_C_value = 9;
+byte bit_C;
+
 //74hc165
 // Definições de constantes
-#define nCIs  3               //Registra o número de CIs cascateados
+#define nCIs  1               //Registra o número de CIs cascateados
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
@@ -22,7 +38,7 @@ const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock I
 // Declaração de constantes globais 74HC595
 const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
 const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
-const int dataPin595 = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
+const int dataPin595 = 9; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
 //inicialização dos vetores onde serão armazenados os bytes
 byte pinValues[nCIs];
@@ -106,8 +122,10 @@ void display_pin_values()
 }
 
 // Configuração do Programa
-void setup()
-{
+void setup(){
+    Ethernet.begin(mac, ip, gateway, subnet); //PASSA OS PARÂMETROS PARA A FUNÇÃO QUE VAI FAZER A CONEXÃO COM A REDE
+    server.begin(); //INICIA O SERVIDOR PARA RECEBER DADOS NA PORTA 80
+
     //habilita a comunicação via monitor serial
     Serial.begin(9600);
     
@@ -141,6 +159,53 @@ void setup()
 
 //Função do loop principal
 void loop(){
+
+    EthernetClient client = server.available(); //CRIA UMA CONEXÃO COM O CLIENTE
+    if (client) { // SE EXISTE CLIENTE, FAZ
+        while (client.connected()) {//ENQUANTO EXISTIR CLIENTE CONECTADO, FAZ
+            if (client.available()) { //SE O CLIENTE ESTÁ HABILITADO, FAZ
+                char c = client.read(); //LÊ CARACTERE A CARACTERE DA REQUISIÇÃO HTTP
+                if (readString.length() < 100){ //SE O ARRAY FOR MENOR QUE 100, FAZ
+                    readString += c; // "readstring" VAI RECEBER OS CARACTERES LIDO
+                }
+
+                indice_C = readString.indexOf("l");
+                indice_C_int = indice_C.toInt();
+                indice_C_value = readString.charAt(indice_C_int + 2) - 48;
+                bit_C = pow(2, indice_C_value);
+
+                if (c == '\n') { //SE ENCONTRAR "\n" É O FINAL DO CABEÇALHO DA REQUISIÇÃO HTTP
+                    if (readString.indexOf("?") <0){ //SE ENCONTRAR O CARACTER "?", FAZ
+                    }
+                    else{ //SENÃO,FAZ
+                        if(readString.indexOf("l") >0){ //SE ENCONTRAR O PARÂMETRO "ledParam=1", FAZ
+                            for(int i = 0; i < nCIs; i++){
+                                for(int j = 0; j < BYTES; j++){
+                                    if (j==(indice_C_value)){
+                                        //pinValuesOut[nCIs-1-i] ^= (bit_C << ((BYTES-1) - j));
+                                    }
+                                }
+                            }   
+                        }
+                        client.println("HTTP/1.1 200 OK"); //ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
+                        client.println("Content-Type: text/html"); //ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
+                        client.println("");
+                        client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
+                        client.println("<html>"); //ABRE A TAG "html"
+                        client.println("<head>"); //ABRE A TAG "head"
+                        client.println("<meta http-equiv='Refresh' content='0; url=http://127.0.0.1/smarthouse/index.php' />"); //ESCREVE O TEXTO NA PÁGINA
+                        client.println("</head>"); //FECHA A TAG "head"
+                        client.println("</body>"); //FECHA A TAG "body"
+                        client.println("</html>"); //FECHA A TAG "html"
+                        readString=""; //A VARIÁVEL É REINICIALIZADA
+                        client.stop(); //FINALIZA A REQUISIÇÃO HTTP E DESCONECTA O CLIENTE
+                    }
+                }
+            }
+        }
+    }
+
+
     //Lê todos as portas externas
     read_shift_regs();
     
@@ -163,6 +228,5 @@ void loop(){
             oldPinValuesOut[i] = pinValuesOut[i];
         }
     }
-
     delay(Atraso);
 }

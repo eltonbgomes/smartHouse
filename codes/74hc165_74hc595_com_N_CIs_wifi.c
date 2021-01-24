@@ -17,7 +17,7 @@
 
 //74hc165
 // Definições de constantes
-#define nCIs  1               //Registra o número de CIs cascateados
+#define nCIs  3               //Registra o número de CIs cascateados
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
@@ -180,7 +180,7 @@ void setup(){
 	Serial.begin(9600); //INICIALIZA A SERIAL
 	Serial1.begin(9600); //INICIALIZA A SERIAL PARA O ESP8266
 	WiFi.init(&Serial1); //INICIALIZA A COMUNICAÇÃO SERIAL COM O ESP8266
-	WiFi.config(IPAddress(192,168,0,220)); //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR
+	WiFi.config(IPAddress(192,168,0,120)); //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR
 
 	//INÍCIO - VERIFICA SE O ESP8266 ESTÁ CONECTADO AO ARDUINO, CONECTA A REDE SEM FIO E INICIA O WEBSERVER
 	if(WiFi.status() == WL_NO_SHIELD){
