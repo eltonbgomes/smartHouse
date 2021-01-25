@@ -6,38 +6,8 @@
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
 
-#include <SPI.h> //INCLUSÃO DE BIBLIOTECA
-#include <Ethernet.h> //INCLUSÃO DE BIBLIOTECA
-
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; //ATRIBUIÇÃO DE ENDEREÇO MAC AO ETHERNET SHIELD W5100
-byte ip[] = { 192, 168, 0, 110 }; //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR. EX: 192.168.1.110  **** ISSO VARIA, NO MEU CASO É: 192.168.0.175
-byte gateway[] = {192, 168, 0, 1}; //GATEWAY DE CONEXÃO (ALTERE PARA O GATEWAY DO SEU ROTEADOR)
-byte subnet[] = {255, 255, 255, 0}; //MASCARA DE REDE (ALTERE PARA A SUA MÁSCARA DE REDE)
-EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
-
-const int ledPin = 50; //PINO DIGITAL UTILIZADO PELO LED
-String readString = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-String indice_out = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-int indice_out_int;
-int value_out; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-
-String indice_c_out = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-int indice_c_out_int;
-int value_c_out; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-
-byte byte_out;
-
-
-int status = 0; //DECLARAÇÃO DE VARIÁVEL DO TIPO INTEIRA(SERÁ RESPONSÁVEL POR VERIFICAR O STATUS ATUAL DO LED)
-int led = -1;
-
-int controle = 0;
-
-
-
-
-
-
+#include <SPI.h>
+#include <Ethernet.h>
 
 //74hc165
 // Definições de constantes
@@ -62,6 +32,27 @@ byte pinValues[nCIs];
 byte oldPinValues[nCIs];
 byte pinValuesOut[nCIs];
 byte oldPinValuesOut[nCIs];
+
+//variaveis para utilizar o cliente web
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; //ATRIBUIÇÃO DE ENDEREÇO MAC AO ETHERNET SHIELD W5100
+byte ip[] = { 192, 168, 0, 110 }; //FAIXA DE IP DISPONÍVEL
+byte gateway[] = {192, 168, 0, 1}; //GATEWAY DE CONEXÃO (ALTERE PARA O GATEWAY DO SEU ROTEADOR)
+byte subnet[] = {255, 255, 255, 0}; //MASCARA DE REDE (ALTERE PARA A SUA MÁSCARA DE REDE)
+EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
+
+String readString = ""; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+
+String indice_out = ""; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+int indice_out_int; //variavel para transformar em int o indice da String
+int value_out; //variavel para armazenar o valor correspondente ao indice da String
+
+String indice_c_out = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+int indice_c_out_int; //variavel para transformar em int o indice da String
+int value_c_out; //variavel para armazenar o valor correspondente ao indice da String
+
+byte byte_out; //variavel para armazenar o byte enviado para o cliente
+
+String dados = ""; //VARIÁVEL PARA enviar DADOS NO ENDEREÇO (URL)
 
 //Função para leitura dos dados do 74HC165
 void read_shift_regs(){
@@ -118,8 +109,7 @@ void alteraSaida(){
 }
 
 //Mostra os dados recebidos
-void display_pin_values()
-{
+void display_pin_values(){
     Serial.print("Estado das entradas:\r\n");
 
     for(int i = 0; i < nCIs; i++){
@@ -141,14 +131,89 @@ void display_pin_values()
     Serial.print("\r\n");
 }
 
+void comunicacao(){
+    EthernetClient client = server.available(); //CRIA UMA CONEXÃO COM O CLIENTE
+    if (client) { // SE EXISTE CLIENTE, FAZ
+        while (client.connected()) {//ENQUANTO EXISTIR CLIENTE CONECTADO, FAZ
+            if (client.available()) { //SE O CLIENTE ESTÁ HABILITADO, FAZ
+                char c = client.read(); //LÊ CARACTERE A CARACTERE DA REQUISIÇÃO HTTP
+                if (readString.length() < 100){ //SE O ARRAY FOR MENOR QUE 100, FAZ
+                    readString += c; // "readstring" VAI RECEBER OS CARACTERES LIDO
+                }
+
+                if (c == '\n') { //SE ENCONTRAR "\n" É O FINAL DO CABEÇALHO DA REQUISIÇÃO HTTP
+                    if (readString.indexOf("?") <0){ //SE ENCONTRAR O CARACTER "?", FAZ
+                    }else{ //SENÃO,FAZ
+                        if(readString.indexOf("l") >0){ //SE ENCONTRAR O PARÂMETRO "ledParam=1", FAZ
+                            indice_out = readString.indexOf("l");
+                            indice_c_out = readString.indexOf("c");
+                            // Serial.println("indice_out");
+                            // Serial.println(indice_out);
+
+                            indice_out_int = indice_out.toInt();
+                            indice_c_out_int = indice_c_out.toInt();
+                            // Serial.println("indice_out_int");
+                            // Serial.println(indice_out_int);
+
+                            value_out = readString.charAt(indice_out_int + 2) - 48;
+                            value_c_out = readString.charAt(indice_c_out_int + 2) - 48;
+                            // Serial.println("value_out");
+                            // Serial.println(value_out);
+                            // Serial.println("value_c_out");
+                            // Serial.println(value_c_out);
+
+                            byte_out = 1;
+                            for (int i = 0; i < value_out; i++){
+                                byte_out *= 2;
+                            }
+                        
+                            Serial.println("byte_out");
+                            Serial.println(byte_out);
+                            for(int i = 0; i < nCIs; i++){
+                                if (i==value_c_out){
+                                    pinValuesOut[i] ^= byte_out;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    dados = "<meta http-equiv='Refresh' content='0; url=http://192.168.0.138/smarthouse/index.php?";
+                    for(int i = 0; i < nCIs; i++){
+                        dados += "s";
+                        dados += i;
+                        dados += "=";
+                        dados += pinValuesOut[i];
+                        if (i != (nCIs - 1)){
+                            dados += "&";
+                        }
+                    }
+                    dados += "' />";
+
+                    client.println("HTTP/1.1 200 OK"); //ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
+                    client.println("Content-Type: text/html"); //ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
+                    client.println("");
+                    client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
+                    client.println("<html>"); //ABRE A TAG "html"
+                    client.println("<head>"); //ABRE A TAG "head"
+                    // client.println("<a type= 'button' href='http://127.0.0.1/smarthouse/index.php'>VOLTAR</a>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(dados); //ESCREVE O TEXTO NA PÁGINA
+                    client.println("</head>"); //FECHA A TAG "head"
+                    client.println("</html>"); //FECHA A TAG "html"
+                    readString=""; //A VARIÁVEL É REINICIALIZADA
+                    dados = ""; //VARIÁVEL é reinicializada
+                    client.stop(); //FINALIZA A REQUISIÇÃO HTTP E DESCONECTA O CLIENTE
+                }
+            }
+        }
+    }
+}
+
 // Configuração do Programa
 void setup(){
 
     Ethernet.begin(mac, ip, gateway, subnet); //PASSA OS PARÂMETROS PARA A FUNÇÃO QUE VAI FAZER A CONEXÃO COM A REDE
     server.begin(); //INICIA O SERVIDOR PARA RECEBER DADOS NA PORTA 80
-    pinMode(ledPin, OUTPUT); //DEFINE O PINO COMO SAÍDA
-    digitalWrite(ledPin, LOW); //LED INICIA DESLIGADO
-
 
     //habilita a comunicação via monitor serial
     Serial.begin(9600);
@@ -183,114 +248,7 @@ void setup(){
 
 //Função do loop principal
 void loop(){
-
-    EthernetClient client = server.available(); //CRIA UMA CONEXÃO COM O CLIENTE
-    if (client) { // SE EXISTE CLIENTE, FAZ
-        while (client.connected()) {//ENQUANTO EXISTIR CLIENTE CONECTADO, FAZ
-            if (client.available()) { //SE O CLIENTE ESTÁ HABILITADO, FAZ
-                char c = client.read(); //LÊ CARACTERE A CARACTERE DA REQUISIÇÃO HTTP
-                if (readString.length() < 100){ //SE O ARRAY FOR MENOR QUE 100, FAZ
-                    readString += c; // "readstring" VAI RECEBER OS CARACTERES LIDO
-                }
-
-                if (c == '\n') { //SE ENCONTRAR "\n" É O FINAL DO CABEÇALHO DA REQUISIÇÃO HTTP
-                    if (readString.indexOf("?") <0){ //SE ENCONTRAR O CARACTER "?", FAZ
-                    }else{ //SENÃO,FAZ
-                        if(readString.indexOf("l") >0){ //SE ENCONTRAR O PARÂMETRO "ledParam=1", FAZ
-                            controle = 1;
-                            indice_out = readString.indexOf("l");
-                            indice_c_out = readString.indexOf("c");
-                            Serial.println("indice_out");
-                            Serial.println(indice_out);
-
-                            indice_out_int = indice_out.toInt();
-                            indice_c_out_int = indice_c_out.toInt();
-                            Serial.println("indice_out_int");
-                            Serial.println(indice_out_int);
-
-                            value_out = readString.charAt(indice_out_int + 2) - 48;
-                            value_c_out = readString.charAt(indice_c_out_int + 2) - 48;
-                            Serial.println("value_out");
-                            Serial.println(value_out);
-                            Serial.println("value_c_out");
-                            Serial.println(value_c_out);
-
-                            byte_out = 1;
-                            for (int i = 0; i < value_out; i++){
-                                byte_out *= 2;
-                            }
-                        
-                            Serial.println("byte_out");
-                            Serial.println(byte_out);
-                            for(int i = 0; i < nCIs; i++){
-                                if (i==value_c_out){
-                                    pinValuesOut[i] ^= byte_out;
-                                    break;
-                                }
-                                
-                            }  
-                        }
-                    }
-
-                    client.println("HTTP/1.1 200 OK"); //ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
-                    client.println("Content-Type: text/html"); //ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
-                    client.println("");
-                    client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
-                    client.println("<html>"); //ABRE A TAG "html"
-                    client.println("<head>"); //ABRE A TAG "head"
-                    client.println("<title>SMART HOUSE</title>"); //ESCREVE O TEXTO NA PÁGINA
-                    client.println("</head>"); //FECHA A TAG "head"
-                    client.println("<body style=background-color:#ADD8E6>"); //DEFINE A COR DE FUNDO DA PÁGINA
-                    client.println("<center><font color='blue'><h1>SMART HOUSE</font></center></h1>"); //ESCREVE "MASTERWALKER SHOP" EM COR AZUL NA PÁGINA
-                    client.println(readString);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(indice_out);
-                    client.println("<h1><center>CONTROLE DE LED</center></h1>"); //ESCREVE "CONTROLE DE LED" NA PÁGINA
-                    if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
-                        //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO APAGAR (CASO O LED ESTEJA LIGADO)
-                        client.println("<center><form method=get name=LED><input type=hidden name=l value=0 /><input type=submit value=APAGAR></form></cente");
-                    }else{ //SENÃO, FAZ
-                        //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO ACENDER (CASO O LED ESTEJA DESLIGADO)
-                        client.println("<center><form method=get name=LED><input type=hidden name=l value=1 /><input type=submit value=ACENDER></form></cente");
-                    }
-                    if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
-                        client.println("<center><font color='green' size='5'>LIGADO</font></center>"); //ESCREVE "LIGADO" EM COR VERDE NA PÁGINA
-                    }else{ //SENÃO, FAZ
-                        client.println("<center><font color='red' size='5'>DESLIGADO</font></center>"); //ESCREVE "DESLIGADO" EM COR VERMELHA NA PÁGINA
-                    }
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>valor capturado</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(value_out);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>valor capturado em byte</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(byte_out);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>valor da saida</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(pinValuesOut[0]);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>valor do controle</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(controle);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>readString</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(readString);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<p>indice_capturado</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println(indice_out);
-                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<a type= 'button' href='http://127.0.0.1/smarthouse/index.php'>VOLTAR</a>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                    client.println("<meta http-equiv='Refresh' content='0; url=http://127.0.0.1/smarthouse/index.php' />"); //ESCREVE O TEXTO NA PÁGINA
-                    client.println("</body>"); //FECHA A TAG "body"
-                    client.println("</html>"); //FECHA A TAG "html"
-                    readString=""; //A VARIÁVEL É REINICIALIZADA
-                    client.stop(); //FINALIZA A REQUISIÇÃO HTTP E DESCONECTA O CLIENTE
-                }
-            }
-        }
-    }
-
-
-
-
+    comunicacao();//faz a comunicacao caso ocorra solicitacao
     //Lê todos as portas externas
     read_shift_regs();
     
