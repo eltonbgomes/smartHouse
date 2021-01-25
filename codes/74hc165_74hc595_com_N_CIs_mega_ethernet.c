@@ -17,11 +17,21 @@ EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
 
 const int ledPin = 50; //PINO DIGITAL UTILIZADO PELO LED
 String readString = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-String indice_C = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
-int indice = 6;
-int indice_C_value = 6; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+String indice_out = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+int indice_out_int;
+int value_out; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+
+String indice_c_out = String(30); //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+int indice_c_out_int;
+int value_c_out; //VARIÁVEL PARA BUSCAR DADOS NO ENDEREÇO (URL)
+
+byte byte_out;
+
+
 int status = 0; //DECLARAÇÃO DE VARIÁVEL DO TIPO INTEIRA(SERÁ RESPONSÁVEL POR VERIFICAR O STATUS ATUAL DO LED)
 int led = -1;
+
+int controle = 0;
 
 
 
@@ -31,7 +41,7 @@ int led = -1;
 
 //74hc165
 // Definições de constantes
-#define nCIs  3               //Registra o número de CIs cascateados
+#define nCIs  2               //Registra o número de CIs cascateados
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
@@ -97,7 +107,10 @@ void read_shift_regs(){
 
 void alteraSaida(){
     //alterar saida do 595
+
+    Serial.println("Valor de PINVALUESOUT no momento de ir para o CI");
     for (int i = 0; i < nCIs; ++i){
+        Serial.println(pinValuesOut[i]);
         digitalWrite(latchPin595, LOW);
         shiftOut(dataPin595, clockPin595, LSBFIRST, pinValuesOut[i]);
         digitalWrite(latchPin595, HIGH);
@@ -179,57 +192,97 @@ void loop(){
                 if (readString.length() < 100){ //SE O ARRAY FOR MENOR QUE 100, FAZ
                     readString += c; // "readstring" VAI RECEBER OS CARACTERES LIDO
                 }
+
                 if (c == '\n') { //SE ENCONTRAR "\n" É O FINAL DO CABEÇALHO DA REQUISIÇÃO HTTP
                     if (readString.indexOf("?") <0){ //SE ENCONTRAR O CARACTER "?", FAZ
-                }
-                else{ //SENÃO,FAZ
-                    if(readString.indexOf("l=1") >0){ //SE ENCONTRAR O PARÂMETRO "l=1"FAZ
-                        digitalWrite(ledPin, HIGH); //LIGA O LED
-                        status = 1; //VARIÁVEL RECEBE VALOR 1(SIGNIFICA QUE O LED ESTÁ LIGADO)
-                    }else{ //SENÃO, FAZ
-                        digitalWrite(ledPin, LOW); //DESLIGA O LED
-                        status = 0; //VARIÁVEL RECEBE VALOR 0(SIGNIFICA QUE O LED ESTÁ DESLIGADO)
-                    }
-                }
-                indice_C = readString.indexOf("l");
-                indice = indice_C.toInt();
-                indice_C_value = pow(2, readString.charAt(indice + 2) - 48);
+                    }else{ //SENÃO,FAZ
+                        if(readString.indexOf("l") >0){ //SE ENCONTRAR O PARÂMETRO "ledParam=1", FAZ
+                            controle = 1;
+                            indice_out = readString.indexOf("l");
+                            indice_c_out = readString.indexOf("c");
+                            Serial.println("indice_out");
+                            Serial.println(indice_out);
 
-                client.println("HTTP/1.1 200 OK"); //ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
-                client.println("Content-Type: text/html"); //ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
-                client.println("");
-                client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
-                client.println("<html>"); //ABRE A TAG "html"
-                client.println("<head>"); //ABRE A TAG "head"
-                client.println("<link rel='icon' type='image/png' href='https://blogmasterwalkershop.com.br/arquivos/artigos/sub_wifi/logo_mws.png'/>"); //DEFINIÇÃO DO ICONE DA PÁGINA
-                client.println("<title>MasterWalker Shop - Controle de Led via Web server</title>"); //ESCREVE O TEXTO NA PÁGINA
-                client.println("</head>"); //FECHA A TAG "head"
-                client.println("<body style=background-color:#ADD8E6>"); //DEFINE A COR DE FUNDO DA PÁGINA
-                client.println("<center><font color='blue'><h1>MASTERWALKER SHOP</font></center></h1>"); //ESCREVE "MASTERWALKER SHOP" EM COR AZUL NA PÁGINA
-                client.println(readString);
-                client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                client.println(indice_C);
-                client.println("<h1><center>CONTROLE DE LED</center></h1>"); //ESCREVE "CONTROLE DE LED" NA PÁGINA
-                if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
-                    //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO APAGAR (CASO O LED ESTEJA LIGADO)
-                    client.println("<center><form method=get name=LED><input type=hidden name=l value=0 /><input type=submit value=APAGAR></form></cente");
-                }else{ //SENÃO, FAZ
-                    //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO ACENDER (CASO O LED ESTEJA DESLIGADO)
-                    client.println("<center><form method=get name=LED><input type=hidden name=l value=1 /><input type=submit value=ACENDER></form></cente");
-                }
-                client.println("<center><font size='5'>Status atual do LED: </center>"); //ESCREVE "Status atual do LED:" NA PÁGINA
-                if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
-                    client.println("<center><font color='green' size='5'>LIGADO</center>"); //ESCREVE "LIGADO" EM COR VERDE NA PÁGINA
-                }else{ //SENÃO, FAZ
-                    client.println("<center><font color='red' size='5'>DESLIGADO</center>"); //ESCREVE "DESLIGADO" EM COR VERMELHA NA PÁGINA
-                }
-                client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                client.println(indice_C_value);
-                client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
-                client.println("</body>"); //FECHA A TAG "body"
-                client.println("</html>"); //FECHA A TAG "html"
-                readString=""; //A VARIÁVEL É REINICIALIZADA
-                client.stop(); //FINALIZA A REQUISIÇÃO HTTP E DESCONECTA O CLIENTE
+                            indice_out_int = indice_out.toInt();
+                            indice_c_out_int = indice_c_out.toInt();
+                            Serial.println("indice_out_int");
+                            Serial.println(indice_out_int);
+
+                            value_out = readString.charAt(indice_out_int + 2) - 48;
+                            value_c_out = readString.charAt(indice_c_out_int + 2) - 48;
+                            Serial.println("value_out");
+                            Serial.println(value_out);
+                            Serial.println("value_c_out");
+                            Serial.println(value_c_out);
+
+                            byte_out = 1;
+                            for (int i = 0; i < value_out; i++){
+                                byte_out *= 2;
+                            }
+                        
+                            Serial.println("byte_out");
+                            Serial.println(byte_out);
+                            for(int i = 0; i < nCIs; i++){
+                                if (i==value_c_out){
+                                    pinValuesOut[i] ^= byte_out;
+                                    break;
+                                }
+                                
+                            }  
+                        }
+                    }
+
+                    client.println("HTTP/1.1 200 OK"); //ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
+                    client.println("Content-Type: text/html"); //ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
+                    client.println("");
+                    client.println("<!DOCTYPE HTML>"); //INFORMA AO NAVEGADOR A ESPECIFICAÇÃO DO HTML
+                    client.println("<html>"); //ABRE A TAG "html"
+                    client.println("<head>"); //ABRE A TAG "head"
+                    client.println("<title>SMART HOUSE</title>"); //ESCREVE O TEXTO NA PÁGINA
+                    client.println("</head>"); //FECHA A TAG "head"
+                    client.println("<body style=background-color:#ADD8E6>"); //DEFINE A COR DE FUNDO DA PÁGINA
+                    client.println("<center><font color='blue'><h1>SMART HOUSE</font></center></h1>"); //ESCREVE "MASTERWALKER SHOP" EM COR AZUL NA PÁGINA
+                    client.println(readString);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(indice_out);
+                    client.println("<h1><center>CONTROLE DE LED</center></h1>"); //ESCREVE "CONTROLE DE LED" NA PÁGINA
+                    if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
+                        //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO APAGAR (CASO O LED ESTEJA LIGADO)
+                        client.println("<center><form method=get name=LED><input type=hidden name=l value=0 /><input type=submit value=APAGAR></form></cente");
+                    }else{ //SENÃO, FAZ
+                        //A LINHA ABAIXO CRIA UM FORMULÁRIO CONTENDO UMA ENTRADA INVISÍVEL(hidden) COM O PARÂMETRO DA URL E CRIA UM BOTÃO ACENDER (CASO O LED ESTEJA DESLIGADO)
+                        client.println("<center><form method=get name=LED><input type=hidden name=l value=1 /><input type=submit value=ACENDER></form></cente");
+                    }
+                    if (status == 1){ //SE VARIÁVEL FOR IGUAL A 1, FAZ
+                        client.println("<center><font color='green' size='5'>LIGADO</font></center>"); //ESCREVE "LIGADO" EM COR VERDE NA PÁGINA
+                    }else{ //SENÃO, FAZ
+                        client.println("<center><font color='red' size='5'>DESLIGADO</font></center>"); //ESCREVE "DESLIGADO" EM COR VERMELHA NA PÁGINA
+                    }
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>valor capturado</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(value_out);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>valor capturado em byte</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(byte_out);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>valor da saida</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(pinValuesOut[0]);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>valor do controle</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(controle);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>readString</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(readString);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<p>indice_capturado</p>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println(indice_out);
+                    client.println("<hr/>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<a type= 'button' href='http://127.0.0.1/smarthouse/index.php'>VOLTAR</a>"); //TAG HTML QUE CRIA UMA LINHA HORIZONTAL NA PÁGINA
+                    client.println("<meta http-equiv='Refresh' content='0; url=http://127.0.0.1/smarthouse/index.php' />"); //ESCREVE O TEXTO NA PÁGINA
+                    client.println("</body>"); //FECHA A TAG "body"
+                    client.println("</html>"); //FECHA A TAG "html"
+                    readString=""; //A VARIÁVEL É REINICIALIZADA
+                    client.stop(); //FINALIZA A REQUISIÇÃO HTTP E DESCONECTA O CLIENTE
                 }
             }
         }
