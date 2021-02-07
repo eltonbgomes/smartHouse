@@ -35,7 +35,7 @@ byte oldPinValuesOut[nCIs];
 
 //variaveis para utilizar o cliente web
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; //ATRIBUIÇÃO DE ENDEREÇO MAC AO ETHERNET SHIELD W5100
-byte ip[] = { 192, 168, 0, 110 }; //FAIXA DE IP DISPONÍVEL
+byte ip[] = { 192, 168, 0, 120 }; //FAIXA DE IP DISPONÍVEL
 byte gateway[] = {192, 168, 0, 1}; //GATEWAY DE CONEXÃO (ALTERE PARA O GATEWAY DO SEU ROTEADOR)
 byte subnet[] = {255, 255, 255, 0}; //MASCARA DE REDE (ALTERE PARA A SUA MÁSCARA DE REDE)
 EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
