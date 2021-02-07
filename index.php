@@ -1,14 +1,14 @@
 <?php
-    include_once("conecta.php");
+    // include_once("conecta.php");
 
-    $sql="insert into temperatura (data, hora, temperatura) values(CURDATE(), CURTIME(),'567.54')";
+    // $sql="insert into temperatura (data, hora, temperatura) values(CURDATE(), CURTIME(),'567.54')";
 
-    mysqli_select_db($con1, $database_conexao1);
-    $Recordset1 = mysqli_query($con1,$sql) or die(mysqli_error($con1));
+    // mysqli_select_db($con1, $database_conexao1);
+    // $Recordset1 = mysqli_query($con1,$sql) or die(mysqli_error($con1));
 
-    $_SESSION["id_proposta"] = mysqli_insert_id($con1);
+    // $_SESSION["id_proposta"] = mysqli_insert_id($con1);
 
-    echo  $_SESSION["id_proposta"];
+    // echo  $_SESSION["id_proposta"];
 ?>
 
 <!DOCTYPE html>
