@@ -79,7 +79,7 @@ void enviaStatus(int i){
     Serial.println(status);
     Serial.println(indice);
 
-    sprintf(queryStatus, UPDATE_DATA, pinValuesOut[i], i+1);
+    sprintf(queryStatus, UPDATE_DATA, status, indice);
     conecta();
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     

@@ -28,7 +28,7 @@ MySQL_Cursor* cursor;
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
 
-#define DHTPIN A0
+#define DHTPIN 2
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long time = millis();
@@ -62,53 +62,39 @@ void desconecta(){
 }
 
 void enviaStatus(int i){
-    char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
+    char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%s where id_output=%s";
 
-    char status[4];
+    char status[3];
     char indice[1];
     char queryStatus[128];
 
-    Serial.println("pinvalues ANTES");
-    Serial.println(pinValuesOut[i]);
-
     dtostrf(pinValuesOut[i], 3, 0, status);
     dtostrf(i + 1, 1, 0, indice);
-    
-    Serial.println("pinvalues");
-    Serial.println(pinValuesOut[i]);
-    Serial.println(status);
-    Serial.println(indice);
 
-    sprintf(queryStatus, UPDATE_DATA, pinValuesOut[i], i+1);
+    sprintf(queryStatus, UPDATE_DATA, status, indice);
     conecta();
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     
     cur_mem->execute(queryStatus);
     desconecta();
-    Serial.println(queryStatus);
-
     delete cur_mem;
 }
 
 void enviaDHT() {
 
-    char INSERT_DATA[] = "INSERT INTO bdqyngbnbsudmj189t37.temperatura (data, hora, temperatura, umidade, indice_calor) VALUES (CURDATE(), CURTIME(), %s, %s, %s)"; 
+    char INSERT_DATA[] = "INSERT INTO bdqyngbnbsudmj189t37.temperatura (temperatura, umidade) VALUES (%s, %s)"; 
  
     char queryDHT[128];
-    char tempString[6];
-    char umidString[6];
-    char hicString[6];
+    char tempString[10];
+    char umidString[10];
 
-    float temp = dht.readTemperature();
     float umid = dht.readHumidity();
-    float hic = dht.computeHeatIndex(temp, umid, false);
+    float temp = dht.readTemperature();
 
-    dtostrf(temp, 5, 2, tempString);
-    dtostrf(umid, 5, 2, umidString);
-    dtostrf(hic, 5, 2, hicString);
+    dtostrf(temp, 4, 2, tempString);
+    dtostrf(umid, 4, 2, umidString);
 
-    sprintf(queryDHT, INSERT_DATA, tempString, umidString, hicString);
-
+    sprintf(queryDHT, INSERT_DATA, tempString, umidString);
     conecta();
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     
@@ -157,6 +143,7 @@ void read_shift_regs(){
         //altera somente uma vez a saida com o botao pressionado
         if(pinValues[nCIs-1-i] != oldPinValues[nCIs-1-i]){
             pinValuesOut[nCIs-1-i] = bytesValOut[nCIs-1-i];
+            oldPinValues[nCIs-1-i] = pinValues[nCIs-1-i];
         }
     }
 }
@@ -166,38 +153,14 @@ void alteraSaida(){
 
     Serial.println("Valor de PINVALUESOUT no momento de ir para o CI");
     for (int i = 0; i < nCIs; ++i){
-        Serial.println(pinValuesOut[i]);
         digitalWrite(latchPin595, LOW);
         shiftOut(dataPin595, clockPin595, LSBFIRST, pinValuesOut[i]);
         digitalWrite(latchPin595, HIGH);
     }
 }
 
-//Mostra os dados recebidos
-void display_pin_values(){
-    Serial.print("Estado das entradas:\r\n");
-
-    for(int i = 0; i < nCIs; i++){
-        for(int j = 0; j < BYTES; j++){
-            Serial.print("  Pin0-");
-            Serial.print(i);
-            Serial.print(j);
-            Serial.print(": ");
-
-            if((pinValues[i] >> j) & 1)
-                Serial.print("ALTO");
-            else
-                Serial.print("BAIXO");
-
-            Serial.print("\r\n");
-        }
-    }
-
-    Serial.print("\r\n");
-}
-
 void comunicacao(){
-    
+   
 }
 
 // Configuração do Programa
@@ -231,7 +194,6 @@ void setup(){
     //altera as saidas para desligadas
     alteraSaida();
     //mostra no monitor
-    display_pin_values();
     enviaDHT();
 }
 
@@ -240,20 +202,8 @@ void loop(){
     comunicacao();//faz a comunicacao caso ocorra solicitacao
     //Lê todos as portas externas
     read_shift_regs();
-    
-    //Se houver modificação no estado dos pinos, mostra o estado atual
-    for(int i = 0; i < nCIs; i++){
-        if(pinValues[i] != oldPinValues[i]){
-            Serial.print("*Alteracao detectada*\r\n");
-            display_pin_values();
-            Serial.print("Valor das entradas em decimal:\n");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.print(pinValues[i]);
-            oldPinValues[i] = pinValues[i];
-        }
-    }
-    //altera a saída se existir alguma mudança
+
+    //altera a saída se existir alguma mudança e envia dados ao BD
     for(int i = 0; i < nCIs; i++){
         if (oldPinValuesOut[i] != pinValuesOut[i]){
             alteraSaida();
@@ -263,7 +213,8 @@ void loop(){
         }
     }
 
-    if((millis() - time) > 1800000){
+    //envia dados de temperatura para o BD
+    if((millis() - time) > 3600000){
         time = millis();
         enviaDHT();
     }
