@@ -1,79 +1,30 @@
-<?php
-    // include_once("conecta.php");
-
-    // $sql="insert into temperatura (data, hora, temperatura) values(CURDATE(), CURTIME(),'567.54')";
-
-    // mysqli_select_db($con1, $database_conexao1);
-    // $Recordset1 = mysqli_query($con1,$sql) or die(mysqli_error($con1));
-
-    // $_SESSION["id_proposta"] = mysqli_insert_id($con1);
-
-    // echo  $_SESSION["id_proposta"];
-?>
-
+<?php include_once("status.php"); ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 
 <head>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <?php
 
-    <br>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=0">L_00</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=1">L_01</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=2">L_02</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=3">L_03</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=4">L_04</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=5">L_05</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=6">L_06</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=0&l=7">L_07</a>
-
-    <br>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=0">L_00</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=1">L_01</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=2">L_02</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=3">L_03</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=4">L_04</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=5">L_05</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=6">L_06</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=1&l=7">L_07</a>
-
-    <br>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=0">L_00</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=1">L_01</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=2">L_02</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=3">L_03</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=4">L_04</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=5">L_05</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=6">L_06</a>
-    <br>
-    <a type= "button" href="http://192.168.0.120/?c=2&l=7">L_07</a>
-
-
+        for ($i=1; $i <= $_SESSION["nCIs"]; $i++) { 
+            $auxDecimal = $_SESSION["status"][$i-1];
+            echo "<center>";
+            for ($j=1; $j <= $_SESSION["byte"]; $j++) {
+                $binario[$j-1] = $auxDecimal % 2;
+                $auxDecimal = intdiv($auxDecimal, 2);
+                if ($binario[$j-1]) {
+                    $corBotao = "btn btn-warning";
+                }else{
+                    $corBotao = "btn btn-primary";
+                }
+                echo '<a type="button" href="enviaStatus.php?c='.$i.'&l='.$j.'" class="'.$corBotao.'">C'.$i.' L'.$j.'</a>';
+            }
+            echo '</center><hr>';
+        }
+    ?>
+    <center><a type="button" href="enviaStatus.php?reset=1" class="btn btn-danger">RESET</a></center>
 </body>
-

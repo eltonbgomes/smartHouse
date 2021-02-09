@@ -49,6 +49,9 @@ byte pinValues[nCIs];
 byte oldPinValues[nCIs];
 byte pinValuesOut[nCIs];
 byte oldPinValuesOut[nCIs];
+byte statusBD[nCIs];
+bool altera = false;
+bool alteraSQL = false;
 
 void conecta(){
     if(!conn.connect(server_addr, 3306, user, password)){
@@ -63,31 +66,18 @@ void desconecta(){
 
 void enviaStatus(int i){
     char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
-
-    char status[4];
-    char indice[1];
     char queryStatus[128];
 
-    Serial.println("pinvalues ANTES");
-    Serial.println(pinValuesOut[i]);
+    sprintf(queryStatus, UPDATE_DATA, pinValuesOut[i], i+1);
 
-    dtostrf(pinValuesOut[i], 3, 0, status);
-    dtostrf(i + 1, 1, 0, indice);
-    
-    Serial.println("pinvalues");
-    Serial.println(pinValuesOut[i]);
-    Serial.println(status);
-    Serial.println(indice);
-
-    sprintf(queryStatus, UPDATE_DATA, status, indice);
-    conecta();
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     
     cur_mem->execute(queryStatus);
-    desconecta();
+
     Serial.println(queryStatus);
 
     delete cur_mem;
+    alteraSQL = false;
 }
 
 void enviaDHT() {
@@ -109,14 +99,14 @@ void enviaDHT() {
 
     sprintf(queryDHT, INSERT_DATA, tempString, umidString, hicString);
 
-    conecta();
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     
     Serial.println(queryDHT);
     cur_mem->execute(queryDHT);
-    desconecta();
 
     delete cur_mem;
+    Serial.println("ALTERASQL DENTRO");
+    Serial.println(alteraSQL);
 }
 
 //Função para leitura dos dados do 74HC165
@@ -155,8 +145,10 @@ void read_shift_regs(){
         pinValues[nCIs-1-i] = bytesVal[nCIs-1-i];
 
         //altera somente uma vez a saida com o botao pressionado
-        if(pinValues[nCIs-1-i] != oldPinValues[nCIs-1-i]){
+        if((pinValues[nCIs-1-i] != oldPinValues[nCIs-1-i]) && (pinValuesOut[nCIs-1-i] != bytesValOut[nCIs-1-i]) && !altera){
             pinValuesOut[nCIs-1-i] = bytesValOut[nCIs-1-i];
+            altera = true;
+            alteraSQL = true;
         }
     }
 }
@@ -171,6 +163,7 @@ void alteraSaida(){
         shiftOut(dataPin595, clockPin595, LSBFIRST, pinValuesOut[i]);
         digitalWrite(latchPin595, HIGH);
     }
+    altera = false;
 }
 
 //Mostra os dados recebidos
@@ -197,7 +190,29 @@ void display_pin_values(){
 }
 
 void comunicacao(){
-    
+    const char query[] = "SELECT status FROM bdqyngbnbsudmj189t37.output";
+    MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
+    cur_mem->execute(query);
+    column_names *cols = cur_mem->get_columns();
+    // Read the rows
+    row_values *row = NULL;
+    int i = 0;
+    do {
+        if (i < 3){
+            row = cur_mem->get_next_row();
+            if (row != NULL) {
+                for (int f = 0; f < cols->num_fields; f++) {
+                    statusBD[i] = atoi(row->values[f]);
+                }
+            }
+            if ((pinValuesOut[i] != statusBD[i]) && !altera){
+                pinValuesOut[i] = statusBD[i];
+                altera = true;
+            }
+        }
+        i++;
+    } while (row != NULL);
+    delete cur_mem;
 }
 
 // Configuração do Programa
@@ -237,10 +252,14 @@ void setup(){
 
 //Função do loop principal
 void loop(){
-    comunicacao();//faz a comunicacao caso ocorra solicitacao
     //Lê todos as portas externas
+    conecta();
     read_shift_regs();
-    
+
+    if(!alteraSQL){
+        comunicacao();
+    }
+
     //Se houver modificação no estado dos pinos, mostra o estado atual
     for(int i = 0; i < nCIs; i++){
         if(pinValues[i] != oldPinValues[i]){
@@ -254,12 +273,17 @@ void loop(){
         }
     }
     //altera a saída se existir alguma mudança
-    for(int i = 0; i < nCIs; i++){
-        if (oldPinValuesOut[i] != pinValuesOut[i]){
-            alteraSaida();
-            delayMicroseconds(Atraso);
-            enviaStatus(i);
-            oldPinValuesOut[i] = pinValuesOut[i];
+    if (altera){
+        for(int i = 0; i < nCIs; i++){
+            if (oldPinValuesOut[i] != pinValuesOut[i]){
+                alteraSaida();
+                if (alteraSQL){
+                    delayMicroseconds(Atraso);
+                    enviaStatus(i);
+                }
+                oldPinValuesOut[i] = pinValuesOut[i];
+                break;
+            }
         }
     }
 
@@ -267,6 +291,9 @@ void loop(){
         time = millis();
         enviaDHT();
     }
-
     delay(Atraso);
+    Serial.println("ALTERA LOOP");
+    Serial.println(altera);
+    Serial.println("ALTERASQL LOOP");
+    Serial.println(alteraSQL);
 }
