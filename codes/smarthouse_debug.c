@@ -65,6 +65,7 @@ void desconecta(){
 }
 
 void enviaStatus(int i){
+    conecta();
     char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
     char queryStatus[128];
 
@@ -81,7 +82,7 @@ void enviaStatus(int i){
 }
 
 void enviaDHT() {
-
+    conecta();
     char INSERT_DATA[] = "INSERT INTO bdqyngbnbsudmj189t37.temperatura (data, hora, temperatura, umidade, indice_calor) VALUES (CURDATE(), CURTIME(), %s, %s, %s)"; 
  
     char queryDHT[128];

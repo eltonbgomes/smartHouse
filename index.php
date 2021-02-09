@@ -9,13 +9,14 @@
 
 <body>
     <?php
-
-        for ($i=1; $i <= $_SESSION["nCIs"]; $i++) { 
+        for ($i=$_SESSION["nCIs"]; $i > 0; $i--) { 
             $auxDecimal = $_SESSION["status"][$i-1];
-            echo "<center>";
-            for ($j=1; $j <= $_SESSION["byte"]; $j++) {
-                $binario[$j-1] = $auxDecimal % 2;
+            for ($j=0; $j < $_SESSION["byte"] ; $j++) {//loop para colorir os botoes conforme o status
+                $binario[$j] = $auxDecimal % 2;
                 $auxDecimal = intdiv($auxDecimal, 2);
+            }
+            echo "<center>";
+            for ($j=$_SESSION["byte"]; $j > 0 ; $j--) {
                 if ($binario[$j-1]) {
                     $corBotao = "btn btn-warning";
                 }else{
@@ -24,7 +25,8 @@
                 echo '<a type="button" href="enviaStatus.php?c='.$i.'&l='.$j.'" class="'.$corBotao.'">C'.$i.' L'.$j.'</a>';
             }
             echo '</center><hr>';
-        }
+        }        
     ?>
+    
     <center><a type="button" href="enviaStatus.php?reset=1" class="btn btn-danger">RESET</a></center>
 </body>
