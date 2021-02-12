@@ -28,21 +28,21 @@ MySQL_Cursor* cursor;
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
 
-#define DHTPIN A0
+#define DHTPIN 2
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long time = millis();
 
 // Declaração de constantes globais 74HC165
-const int ploadPin165        = 30;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
-const int clockEnablePin165  = 28;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
-const int dataPin165         = 34;   //Conecta ao pino 9 do 74HC165 (Q7 - serial output from the last stage)(Q7)
-const int clockPin165        = 32;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
+const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
+const int clockEnablePin165  = 3;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
+const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial output from the last stage)(Q7)
+const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
 
 // Declaração de constantes globais 74HC595
-const int clockPin595 = 22; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
-const int latchPin595 = 24; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
-const int dataPin595 = 26; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
+const int clockPin595 = A0; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
+const int latchPin595 = A1; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
+const int dataPin595 = A2; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
 //inicialização dos vetores onde serão armazenados os bytes
 byte pinValues[nCIs];
@@ -161,6 +161,7 @@ void alteraSaida(){
 }
 
 void comunicacao(){
+    conecta();
     const char query[] = "SELECT status FROM bdqyngbnbsudmj189t37.output";
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
     cur_mem->execute(query);
@@ -189,7 +190,6 @@ void comunicacao(){
 // Configuração do Programa
 void setup(){
     dht.begin();
-    Ethernet.begin(mac_addr);
 
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -205,6 +205,8 @@ void setup(){
     pinMode(clockPin595, OUTPUT);
     pinMode(dataPin595, OUTPUT);
 
+    digitalWrite(latchPin595, HIGH);
+
     //inicializa com as saidas desligadas
     for(int i = 0; i < nCIs; i++){
         pinValues[i] = 0;
@@ -214,7 +216,6 @@ void setup(){
     }
 
     //altera as saidas para desligadas
-    conecta();
     alteraSaida();
     enviaDHT();
 }
@@ -249,7 +250,7 @@ void loop(){
         }
     }
 
-    if((millis() - time) > 1800000){
+    if((millis() - time) > 600000){
         time = millis();
         enviaDHT();
     }

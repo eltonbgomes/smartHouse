@@ -5,44 +5,33 @@
  * Data: 15/01/2020                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
-#include <Ethernet.h> //INCLUSÃO DE BIBLIOTECA
-#include <MySQL_Connection.h>
-#include <MySQL_Cursor.h>
+#include <SoftwareSerial.h> // A biblioteca para comunicar o Arduino com o ESP-01
 #include "DHT.h"
 #include "secrets.h"
 
-byte mac_addr[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-
-IPAddress server_addr(A,B,C,D); // O IP DO SERVIDOR DA CLEVER CLOUD
-char user[] = SECRET_USER_MYSQL;  // Usuario MySQL
-char password[] = SECRET_PASSWORD_MYSQL; //   Senha MySQL
-
-EthernetClient client;
-MySQL_Connection conn((Client *)&client);
-MySQL_Cursor* cursor;
+SoftwareSerial SoftSerial(10, 9); // TX ESP, RX ESP.
 
 //74hc165
 // Definições de constantes
-#define nCIs  3               //Registra o número de CIs cascateados
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
 
-#define DHTPIN 2
+#define DHTPIN A0
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long time = millis();
 
 // Declaração de constantes globais 74HC165
 const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
-const int clockEnablePin165  = 3;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
+const int clockEnablePin165  = 5;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
 const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial output from the last stage)(Q7)
 const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
 
 // Declaração de constantes globais 74HC595
-const int clockPin595 = A0; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
-const int latchPin595 = A1; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
-const int dataPin595 = A2; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
+const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
+const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
+const int dataPin595 = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
 //inicialização dos vetores onde serão armazenados os bytes
 byte pinValues[nCIs];
@@ -53,39 +42,57 @@ byte statusBD[nCIs];
 bool altera = false;
 bool alteraSQL = false;
 
-void conecta(){
-    if(!conn.connect(server_addr, 3306, user, password)){
-        Serial.println("Falha na Conexão.");
+char query[200];
+
+void recebeDadosESP(){
+    char  mensagem[20];
+    byte atual = 255;
+    byte i = 0;
+
+    Serial.println("DENTRO de recebeDadosESP");
+
+    if (SoftSerial.available() > 0) {
+        Serial.println("SoftSerial OK");
+        while (atual != 10) {
+            if (SoftSerial.available() > 0) {
+                atual = SoftSerial.read();
+                //     Serial.print((char)leitura);
+                mensagem[i] = (char)atual;
+                i++;
+            }
+        }
+        statusBD[0] = atoi(strtok(mensagem, "|"));
+
+        for (int j = 1; j < nCIs; j++){
+            statusBD[j] = atoi(strtok(NULL, "|"));
+        }
+        Serial.println("statusBD");
+        for (int j = 0; j < nCIs; j++){
+            if ((pinValuesOut[j] != statusBD[j]) && !altera){
+                pinValuesOut[j] = statusBD[j];
+                altera = true;
+            }
+            Serial.println("statusBD[j]");
+            Serial.println(statusBD[j]);
+        }
     }
 }
 
-void desconecta(){
-    conn.close();
-    Serial.println("Conexão Encerrada.");
-}
-
 void enviaStatus(int i){
-    conecta();
     char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
-    char queryStatus[128];
 
-    sprintf(queryStatus, UPDATE_DATA, pinValuesOut[i], i+1);
+    sprintf(query, UPDATE_DATA, pinValuesOut[i], i+1);
 
-    MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-    
-    cur_mem->execute(queryStatus);
+    enviaESP();
 
-    Serial.println(queryStatus);
-
-    delete cur_mem;
     alteraSQL = false;
 }
 
 void enviaDHT() {
-    conecta();
+
     char INSERT_DATA[] = "INSERT INTO bdqyngbnbsudmj189t37.temperatura (data, hora, temperatura, umidade, indice_calor) VALUES (CURDATE(), CURTIME(), %s, %s, %s)"; 
  
-    char queryDHT[128];
+    char queryDHT[200];
     char tempString[6];
     char umidString[6];
     char hicString[6];
@@ -98,16 +105,19 @@ void enviaDHT() {
     dtostrf(umid, 5, 2, umidString);
     dtostrf(hic, 5, 2, hicString);
 
-    sprintf(queryDHT, INSERT_DATA, tempString, umidString, hicString);
+    sprintf(query, INSERT_DATA, tempString, umidString, hicString);
 
-    MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-    
-    Serial.println(queryDHT);
-    cur_mem->execute(queryDHT);
+    enviaESP();
+}
 
-    delete cur_mem;
-    Serial.println("ALTERASQL DENTRO");
-    Serial.println(alteraSQL);
+void enviaESP(){
+    if (SoftSerial.available() > 0) {
+        SoftSerial.println(query);
+        Serial.println("query no enviaESP");
+        Serial.println(query);
+    }else{
+        Serial.println("Erro ao enviar ao ESP");
+    }
 }
 
 //Função para leitura dos dados do 74HC165
@@ -156,71 +166,22 @@ void read_shift_regs(){
 
 void alteraSaida(){
     //alterar saida do 595
-
-    Serial.println("Valor de PINVALUESOUT no momento de ir para o CI");
+    Serial.println("PINVALUES");
     for (int i = 0; i < nCIs; ++i){
-        Serial.println(pinValuesOut[i]);
         digitalWrite(latchPin595, LOW);
         shiftOut(dataPin595, clockPin595, LSBFIRST, pinValuesOut[i]);
         digitalWrite(latchPin595, HIGH);
+        Serial.println("pinValuesOut[i]");
+        Serial.println(pinValuesOut[i]);
     }
     altera = false;
 }
 
-//Mostra os dados recebidos
-void display_pin_values(){
-    Serial.print("Estado das entradas:\r\n");
-
-    for(int i = 0; i < nCIs; i++){
-        for(int j = 0; j < BYTES; j++){
-            Serial.print("  Pin0-");
-            Serial.print(i);
-            Serial.print(j);
-            Serial.print(": ");
-
-            if((pinValues[i] >> j) & 1)
-                Serial.print("ALTO");
-            else
-                Serial.print("BAIXO");
-
-            Serial.print("\r\n");
-        }
-    }
-
-    Serial.print("\r\n");
-}
-
-void comunicacao(){
-    const char query[] = "SELECT status FROM bdqyngbnbsudmj189t37.output";
-    MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-    cur_mem->execute(query);
-    column_names *cols = cur_mem->get_columns();
-    // Read the rows
-    row_values *row = NULL;
-    int i = 0;
-    do {
-        if (i < 3){
-            row = cur_mem->get_next_row();
-            if (row != NULL) {
-                for (int f = 0; f < cols->num_fields; f++) {
-                    statusBD[i] = atoi(row->values[f]);
-                }
-            }
-            if ((pinValuesOut[i] != statusBD[i]) && !altera){
-                pinValuesOut[i] = statusBD[i];
-                altera = true;
-            }
-        }
-        i++;
-    } while (row != NULL);
-    delete cur_mem;
-}
-
 // Configuração do Programa
 void setup(){
+    SoftSerial.begin(9600);
     Serial.begin(9600);
     dht.begin();
-    Ethernet.begin(mac_addr);
 
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -247,9 +208,8 @@ void setup(){
     }
 
     //altera as saidas para desligadas
+    delay(3000);
     alteraSaida();
-    //mostra no monitor
-    display_pin_values();
     enviaDHT();
 }
 
@@ -259,18 +219,12 @@ void loop(){
     read_shift_regs();
 
     if(!alteraSQL){
-        comunicacao();
+        recebeDadosESP();  
     }
 
     //Se houver modificação no estado dos pinos, mostra o estado atual
     for(int i = 0; i < nCIs; i++){
         if(pinValues[i] != oldPinValues[i]){
-            Serial.print("*Alteracao detectada*\r\n");
-            display_pin_values();
-            Serial.print("Valor das entradas em decimal:\n");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.print(pinValues[i]);
             oldPinValues[i] = pinValues[i];
         }
     }
@@ -289,13 +243,9 @@ void loop(){
         }
     }
 
-    if((millis() - time) > 1800000){
+    if((millis() - time) > 600000){
         time = millis();
         enviaDHT();
     }
     delay(Atraso);
-    Serial.println("ALTERA LOOP");
-    Serial.println(altera);
-    Serial.println("ALTERASQL LOOP");
-    Serial.println(alteraSQL);
 }
