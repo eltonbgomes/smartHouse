@@ -1,10 +1,16 @@
 /* 
  * Programa para ESP-01
  */
-#include <ESP8266WiFi.h>          
+#include <ESP8266WiFi.h>   
 #include <MySQL_Connection.h>
 #include <MySQL_Cursor.h>
+#include <A2a.h>
 #include "secrets.h"
+
+#define endereco 8
+#define tempoAtualizacao 1500
+
+A2a arduinoSlave;
  
 IPAddress server_addr(54, 39, 75, 7); // O IP DO SERVIDOR DA CLEVER CLOUD
 char user[] = USER_MYSQL;              // Usuario MySQL
@@ -17,9 +23,8 @@ WiFiClient client;
 MySQL_Connection conn(&client);
 MySQL_Cursor* cursor;
 
+byte pinValuesOut[nCIs];
 byte statusBD[nCIs];
-
-char query[200];
 
 void recebeDadosSQL(){
     VerificaWiFi();
@@ -43,53 +48,60 @@ void recebeDadosSQL(){
             i++;
         } while (row != NULL);
         delete cur_mem;
-        enviaDadosArduino(); 
+        enviaDadosArduino();
     }
+    Serial.println("statusBD recebeDadosSQL");
+    for (int i = 0; i < nCIs; i++){
+        Serial.println(statusBD[i]);
+    }
+    Serial.println();
 }
 
-void enviaDadosSQL() {
- 
+void enviaDadosOutSQL(int i) {
     VerificaWiFi();
     if (conn.connect(server_addr, 3306, user, password)) {
-        delay(1000);
+        char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
+        char queryStatus[128];
+
+        sprintf(queryStatus, UPDATE_DATA, pinValuesOut[i], i+1);
+
         MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-        // Save
-        // Execute the query
-        cur_mem->execute(query);
-        // Note: since there are no results, we do not need to read any data
-        // Deleting the cursor also frees up memory used
+
+        cur_mem->execute(queryStatus);
+
         delete cur_mem;
+
+        Serial.println("query");
+        Serial.println(queryStatus);
+        Serial.println();
     }
     conn.close();
 }
 
-void aguardaDadosArduino() {
-    while (!(Serial.available() > 0)) {}
-}
-
 void recebeDadosArduino() {
-    byte atual = 255;
-    byte i = 0;
-
-    if (Serial.available() > 0) {
-        while (atual != 10) {
-            if (Serial.available() > 0) {
-                atual = Serial.read();
-                query[i] = (char)atual;
-                i++;
-            }
+    for (int i = 0; i < nCIs; i++){
+        pinValuesOut[i] = arduinoSlave.varWireRead(endereco, i);
+        if (pinValuesOut[i] != statusBD[i]){
+            enviaDadosOutSQL(i);
+            delay(1500);
         }
-        enviaDadosSQL();
     }
+    Serial.println("statusBD no recebeDadosArduino");
+    for (int i = 0; i < nCIs; i++){
+        Serial.println(statusBD[i]);
+    }
+    Serial.println();
 }
 
 void enviaDadosArduino(){
     for (int i = 0; i < nCIs; i++){
-        Serial.print(statusBD[i]);
-        Serial.print("|");
+        arduinoSlave.varWireWrite(endereco, i, statusBD[i]);
+    }
+    Serial.println("statusBD enviaDadosArduino");
+    for (int i = 0; i < nCIs; i++){
+        Serial.println(statusBD[i]);
     }
     Serial.println();
-    
 }
  
 void VerificaWiFi() {
@@ -100,18 +112,23 @@ void VerificaWiFi() {
         while (WiFi.status() != WL_CONNECTED) {
             delay(500);
         }
+        Serial.println("WIFI OK");
+    }else{
+        Serial.println("FALHA WIFI");
     }
 }
 
 void setup() {
     Serial.begin(9600);
+    while (! Serial);
     VerificaWiFi();
+    arduinoSlave.begin(0, 2);
 }
  
 void loop() {
     recebeDadosSQL();
-    aguardaDadosArduino();
+
     recebeDadosArduino();
 
-    delay(100);
+    delay(tempoAtualizacao);
 }

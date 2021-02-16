@@ -5,17 +5,18 @@
  * Data: 15/01/2020                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
-#include <SoftwareSerial.h> // A biblioteca para comunicar o Arduino com o ESP-01
 #include "DHT.h"
+#include <A2a.h>
 #include "secrets.h"
 
-SoftwareSerial SoftSerial(10, 9); // TX ESP, RX ESP.
+A2a arduinoMaster;
 
 //74hc165
 // Definições de constantes
 #define BYTES 8
 #define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
+#define endereco 8
 
 #define DHTPIN A0
 #define DHTTYPE DHT11
@@ -42,55 +43,37 @@ byte statusBD[nCIs];
 bool altera = false;
 bool alteraSQL = false;
 
-char query[200];
+void receberDados() {
+  arduinoMaster.receiveData(); 
+}
+
+void enviarDados() {
+  arduinoMaster.sendData(); 
+}
 
 void recebeDadosESP(){
-    char  mensagem[20];
-    byte atual = 255;
-    byte i = 0;
-
-    Serial.println("DENTRO de recebeDadosESP");
-
-    if (SoftSerial.available() > 0) {
-        Serial.println("SoftSerial OK");
-        while (atual != 10) {
-            if (SoftSerial.available() > 0) {
-                atual = SoftSerial.read();
-                //     Serial.print((char)leitura);
-                mensagem[i] = (char)atual;
-                i++;
-            }
+    for (int i = 0; i < nCIs; i++){
+        statusBD[i] = arduinoMaster.varWireRead(i);
+        if ((pinValuesOut[i] != statusBD[i]) && !altera){
+            pinValuesOut[i] = statusBD[i];
+            altera = true;
         }
-        statusBD[0] = atoi(strtok(mensagem, "|"));
-
-        for (int j = 1; j < nCIs; j++){
-            statusBD[j] = atoi(strtok(NULL, "|"));
-        }
-        Serial.println("statusBD");
-        for (int j = 0; j < nCIs; j++){
-            if ((pinValuesOut[j] != statusBD[j]) && !altera){
-                pinValuesOut[j] = statusBD[j];
-                altera = true;
-            }
-            Serial.println("statusBD[j]");
-            Serial.println(statusBD[j]);
-        }
+        Serial.println("statusBD[i]");
+        Serial.println(statusBD[i]);
     }
 }
 
-void enviaStatus(int i){
-    char UPDATE_DATA[] = "UPDATE bdqyngbnbsudmj189t37.output SET status=%d where id_output=%d";
-
-    sprintf(query, UPDATE_DATA, pinValuesOut[i], i+1);
-
-    enviaESP();
-
+void enviaStatus(){
+    for (int i = 0; i < nCIs; i++){
+        arduinoMaster.varWireWrite(i, pinValuesOut[i]);
+    }
     alteraSQL = false;
 }
 
 void enviaDHT() {
 
     char INSERT_DATA[] = "INSERT INTO bdqyngbnbsudmj189t37.temperatura (data, hora, temperatura, umidade, indice_calor) VALUES (CURDATE(), CURTIME(), %s, %s, %s)"; 
+    char query[128];
  
     char queryDHT[200];
     char tempString[6];
@@ -107,17 +90,13 @@ void enviaDHT() {
 
     sprintf(query, INSERT_DATA, tempString, umidString, hicString);
 
+    Serial.println(query);
+
     enviaESP();
 }
 
 void enviaESP(){
-    if (SoftSerial.available() > 0) {
-        SoftSerial.println(query);
-        Serial.println("query no enviaESP");
-        Serial.println(query);
-    }else{
-        Serial.println("Erro ao enviar ao ESP");
-    }
+
 }
 
 //Função para leitura dos dados do 74HC165
@@ -179,7 +158,10 @@ void alteraSaida(){
 
 // Configuração do Programa
 void setup(){
-    SoftSerial.begin(9600);
+    arduinoMaster.begin(endereco);
+    arduinoMaster.onReceive(receberDados);
+    arduinoMaster.onRequest(enviarDados);
+
     Serial.begin(9600);
     dht.begin();
 
@@ -204,7 +186,8 @@ void setup(){
         pinValues[i] = 0;
         oldPinValues[i] = 0;
         pinValuesOut[i] = 0;
-        oldPinValuesOut[i] = 0;    
+        oldPinValuesOut[i] = 0;
+        statusBD[i] = 0;
     }
 
     //altera as saidas para desligadas
@@ -235,7 +218,7 @@ void loop(){
                 alteraSaida();
                 if (alteraSQL){
                     delayMicroseconds(Atraso);
-                    enviaStatus(i);
+                    enviaStatus();
                 }
                 oldPinValuesOut[i] = pinValuesOut[i];
                 break;
@@ -243,7 +226,7 @@ void loop(){
         }
     }
 
-    if((millis() - time) > 600000){
+    if((millis() - time) > 10000){
         time = millis();
         enviaDHT();
     }
