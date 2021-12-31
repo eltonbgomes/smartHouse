@@ -85,20 +85,6 @@ void read_shift_regs(){
             auxOutBool[Ci] = false;
         }
 
-        //condiçao para funcionar apenas com o botao 06 Ci 0
-        if((millis() - time) > 2000 && auxOutBool[Ci] && pinValues[Ci] == 128 && Ci == 0){
-            Serial.print("\nTESTE 03\n");
-            Serial.print(pinValuesOut[Ci]);
-            bool bit = 0;
-            byte bit2 = pinValuesOut[Ci];
-            pinValuesOut[Ci] &= bit << 6;
-            pinValuesOut[Ci] &= bit << 7;
-            auxOutBool[Ci] = false;
-            Serial.print("\n");
-            Serial.print(pinValuesOut[Ci]);
-            Serial.print("\n");
-        }
-
         //desliga as saidas após tempo pressionado
         if((millis() - time) > 3500 && auxOutBool[Ci]){
             pinValuesOut[Ci] = 0;
@@ -116,36 +102,9 @@ void alteraSaida(){
     }
 }
 
-//Mostra os dados recebidos
-void display_pin_values()
-{
-    Serial.print("Estado das entradas:\r\n");
-
-    for(int i = 0; i < nCIs; i++){
-        for(int j = 0; j < BYTES; j++){
-            Serial.print("  Pin0-");
-            Serial.print(i);
-            Serial.print(j);
-            Serial.print(": ");
-
-            if((pinValues[i] >> j) & 1)
-                Serial.print("ALTO");
-            else
-                Serial.print("BAIXO");
-
-            Serial.print("\r\n");
-        }
-    }
-
-    Serial.print("\r\n");
-}
-
 // Configuração do Programa
 void setup()
-{
-    //habilita a comunicação via monitor serial
-    Serial.begin(9600);
-    
+{   
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
     pinMode(clockEnablePin165, OUTPUT);
@@ -171,7 +130,6 @@ void setup()
     }
 
     alteraSaida();
-    display_pin_values();
 }
 
 //Função do loop principal
@@ -183,12 +141,6 @@ void loop(){
     //Se houver modificação no estado dos pinos, mostra o estado atual
     for(int i = 0; i < nCIs; i++){
         if(pinValues[i] != oldPinValues[i]){
-            Serial.print("\n*Alteracao detectada*\r\n");
-            display_pin_values();
-            Serial.print("Valor das entradas em decimal:\n");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.print(pinValues[i]);
             oldPinValues[i] = pinValues[i];
         }
     }
