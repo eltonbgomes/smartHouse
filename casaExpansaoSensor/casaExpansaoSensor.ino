@@ -144,30 +144,6 @@ void alteraSaida(){
     }
 }
 
-//Mostra os dados recebidos
-void display_pin_values()
-{
-    Serial.print("Estado das entradas:\r\n");
-
-    for(int i = 0; i < nCIs; i++){
-        for(int j = 0; j < BYTES; j++){
-            Serial.print("  Pin0-");
-            Serial.print(i);
-            Serial.print(j);
-            Serial.print(": ");
-
-            if((pinValues[i] >> j) & 1)
-                Serial.print("ALTO");
-            else
-                Serial.print("BAIXO");
-
-            Serial.print("\r\n");
-        }
-    }
-
-    Serial.print("\r\n");
-}
-
 // Configuração do Programa
 void setup()
 {
@@ -199,7 +175,6 @@ void setup()
     }
 
     alteraSaida();
-    display_pin_values();
 }
 
 //Função do loop principal
@@ -211,12 +186,6 @@ void loop(){
     //Se houver modificação no estado dos pinos, mostra o estado atual
     for(int i = 0; i < nCIs; i++){
         if(pinValues[i] != oldPinValues[i]){
-            Serial.print("\n*Alteracao detectada*\r\n");
-            display_pin_values();
-            Serial.print("Valor das entradas em decimal:\n");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.print(pinValues[i]);
             oldPinValues[i] = pinValues[i];
         }
     }
