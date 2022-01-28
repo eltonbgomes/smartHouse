@@ -7,9 +7,9 @@
 \********************************************************************************/
 
 /*Variaveis I2C
- *Variavel 0 -> valor da saida para o Ci 0
- *Variavel 1 -> valor da saida para o Ci 1
- *Variavel 2 -> valor da saida para o Ci 2
+ *Variavel 0 -> valor da saida para o IC 0
+ *Variavel 1 -> valor da saida para o IC 1
+ *Variavel 2 -> valor da saida para o IC 2
  *Variavel 3
  *Variavel 4
  *Variavel 5
@@ -23,12 +23,12 @@
 
 //74hc165
 // Definições de Labels
-#define nCIs  3               //Registra o número de CIs cascateados
+#define nICs  3               //Registra o número de CIs cascateados
 #define BYTES 8
-#define TempoDeslocamento 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
-#define Atraso  100           //Registra o atraso de segurança entre leituras, (milesegundos)
-#define endereco 0x08         //endereco usado na comunicacao I2C entre arduino
-#define tempoBotao 750        //tempo de intervalo segura botao
+#define readTime 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
+#define DELAY  100           //Registra o atraso de segurança entre leituras, (milesegundos)
+#define address 0x08         //address usado na comunicacao I2C entre arduino
+#define buttonTime 750        //tempo de intervalo segura botao
 
 // Declaração de constantes globais 165
 const int ploadPin165        = 6;    //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
@@ -37,15 +37,15 @@ const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial 
 const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
 
 //inicialização das variaveis onde serão armazenados os status
-byte pinValues[nCIs];
-byte oldPinValues[nCIs];
-byte pinValuesOut[nCIs];
-byte oldPinValuesOut[nCIs];
-byte auxOut[nCIs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
-bool auxOutBool[nCIs];
+byte pinValues[nICs];
+byte oldPinValues[nICs];
+byte pinValuesOut[nICs];
+byte oldPinValuesOut[nICs];
+byte helpOut[nICs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
+bool helpOutBool[nICs];
 
 //auxiliares para converter bases
-bool auxBin[BYTES];
+bool helpBin[BYTES];
 bool bin[BYTES];
 
 // Declaração de constantes globais 595
@@ -62,9 +62,9 @@ A2a arduinoMaster;
 //Função para definir um rotina shift-in, lê os dados do 74HC165
 void read_shift_regs(){
     bool bitVal = 0; //variavel para que armazena bit a bit
-    byte bytesVal[nCIs];
-    byte bytesValOut[nCIs];
-    for(int i = 0; i < nCIs; i++){
+    byte bytesVal[nICs];
+    byte bytesValOut[nICs];
+    for(int i = 0; i < nICs; i++){
         bytesVal[i] = 0;
         bytesValOut[i] = arduinoMaster.varWireRead(i);;
     }
@@ -72,86 +72,86 @@ void read_shift_regs(){
     //desloca todos os bits para o pino de dados para leitura
     digitalWrite(clockEnablePin165, HIGH);
     digitalWrite(ploadPin165, LOW);
-    delayMicroseconds(TempoDeslocamento);
+    delayMicroseconds(readTime);
     digitalWrite(ploadPin165, HIGH);
     digitalWrite(clockEnablePin165, LOW);
 
     // Efetua a leitura de um bit da saida serial do 74HC165
 
-    for(int Ci = nCIs - 1; Ci >= 0; Ci--){
+    for(int IC = nICs - 1; IC >= 0; IC--){
         for (int j = 0; j < BYTES; j++){
             bitVal = digitalRead(dataPin165);
 
             //Realiza um shift left e armazena o bit correspondente em bytesVal
-            bytesVal[Ci] |= (bitVal << ((BYTES-1) - j));
+            bytesVal[IC] |= (bitVal << ((BYTES-1) - j));
 
             //compara se ouve mudanca para alterar o 595
-            bytesValOut[Ci] ^= (bitVal << ((BYTES-1) - j));
+            bytesValOut[IC] ^= (bitVal << ((BYTES-1) - j));
 
             //Lança um pulso de clock e desloca o próximo bit
             digitalWrite(clockPin165, HIGH);
-            delayMicroseconds(TempoDeslocamento);
+            delayMicroseconds(readTime);
             digitalWrite(clockPin165, LOW);
         }
-        pinValues[Ci] = bytesVal[Ci];
+        pinValues[IC] = bytesVal[IC];
 
         //condição para somente alterar as saídas se soltar o botão
-        if(pinValues[Ci] != oldPinValues[Ci] && !auxOutBool[Ci]){
+        if(pinValues[IC] != oldPinValues[IC] && !helpOutBool[IC]){
             time = millis();
-            auxOut[Ci] = bytesValOut[Ci];
-            auxOutBool[Ci] = true;
-            oldPinValues[Ci] = pinValues[Ci];
+            helpOut[IC] = bytesValOut[IC];
+            helpOutBool[IC] = true;
+            oldPinValues[IC] = pinValues[IC];
         }
 
         //condicao para impedir a alteração com o botao pressionado
-        if(pinValues[Ci] == 0 && auxOutBool[Ci]){
-            arduinoMaster.varWireWrite(Ci, auxOut[Ci]);
-            auxOutBool[Ci] = false;
+        if(pinValues[IC] == 0 && helpOutBool[IC]){
+            arduinoMaster.varWireWrite(IC, helpOut[IC]);
+            helpOutBool[IC] = false;
         }
 
-        //condiçao para funcionar apenas com o botao 07 Ci 0
-        if((millis() - time) > tempoBotao && auxOutBool[Ci] && pinValues[Ci] == 128 && Ci == 0){
-            convDecBin(Ci); // converte o valor decimal para binario
+        //condiçao para funcionar apenas com o botao 07 IC 0
+        if((millis() - time) > buttonTime && helpOutBool[IC] && pinValues[IC] == 128 && IC == 0){
+            convDecBin(IC); // converte o valor decimal para binario
             
             //desliga as saidas desejadas
-            auxBin[7] = 0;
-            auxBin[6] = 0;
+            helpBin[7] = 0;
+            helpBin[6] = 0;
             
             //inversao
             for(int i = 0; i < BYTES; i++){    
-                bin[i] = auxBin[BYTES - i - 1];
+                bin[i] = helpBin[BYTES - i - 1];
             }
-            arduinoMaster.varWireWrite(Ci, convBinDec());
-            auxOut[Ci] = arduinoMaster.varWireRead(Ci);
+            arduinoMaster.varWireWrite(IC, convBinDec());
+            helpOut[IC] = arduinoMaster.varWireRead(IC);
         }
 
         //desliga as saidas após tempo pressionado
-        if((millis() - time) > tempoBotao * 2 && auxOutBool[Ci]){
-            arduinoMaster.varWireWrite(Ci, 0);
-            auxOut[Ci] = arduinoMaster.varWireRead(Ci);
+        if((millis() - time) > buttonTime * 2 && helpOutBool[IC]){
+            arduinoMaster.varWireWrite(IC, 0);
+            helpOut[IC] = arduinoMaster.varWireRead(IC);
         }
 
         //desliga todas as saidas após tempo pressionado
-        if((millis() - time) > tempoBotao * 3 && auxOutBool[Ci]){
-            for(int i = 0; i < nCIs; i++){
+        if((millis() - time) > buttonTime * 3 && helpOutBool[IC]){
+            for(int i = 0; i < nICs; i++){
                 arduinoMaster.varWireWrite(i, 0);
             }
-            auxOut[Ci] = arduinoMaster.varWireRead(Ci);
+            helpOut[IC] = arduinoMaster.varWireRead(IC);
         }
     }
 }
 
-void convDecBin (int Ci){
+void convDecBin (int IC){
     for(int i = 0; i < BYTES; i++){
-        auxBin[i] = 0; 
+        helpBin[i] = 0; 
     }
-    int decimal = arduinoMaster.varWireRead(Ci);;
+    int decimal = arduinoMaster.varWireRead(IC);;
     int i;
     for(i = 0; (decimal > 1); i++){
-        auxBin[i] = decimal % 2;
+        helpBin[i] = decimal % 2;
         decimal /= 2; 
     }
-    auxBin[i] = decimal;
+    helpBin[i] = decimal;
 }
 
 int convBinDec(){
@@ -162,34 +162,32 @@ int convBinDec(){
     return (int)(dec + 1);
 }
 
-void alteraSaida(){
+void alterOut(){
     //alterar saida do 595
-    for (int i = 0; i < nCIs; ++i){
+    for (int i = 0; i < nICs; ++i){
         digitalWrite(latchPin595, LOW);
         shiftOut(dataPin595, clockPin595, LSBFIRST, arduinoMaster.varWireRead(i));
         digitalWrite(latchPin595, HIGH);
     }
 }
 
-void receberDados() {
+void receiveData() {
   arduinoMaster.receiveData(); 
 }
 
-void enviarDados() {
+void SendData() {
   arduinoMaster.sendData(); 
 }
 
 // Configuração do Programa
 void setup(){
-    //habilita a comunicação via monitor serial
-    Serial.begin(9600);
 
     // INICIA A COMUNICAÇÃO ENTRE ARDUINOS COMO SLAVE NO ENDEREÇO DEFINIDO
-    arduinoMaster.begin(endereco);
+    arduinoMaster.begin(address);
 
     // FUNÇÕES PARA COMUNICAÇÃO
-    arduinoMaster.onReceive(receberDados);
-    arduinoMaster.onRequest(enviarDados);
+    arduinoMaster.onReceive(receiveData);
+    arduinoMaster.onRequest(SendData);
     
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -206,16 +204,16 @@ void setup(){
     pinMode(dataPin595, OUTPUT);
 
     //reseta o estado dos pinos
-    for(int i = 0; i < nCIs; i++){
+    for(int i = 0; i < nICs; i++){
         pinValues[i] = 0;
         oldPinValues[i] = 0;
         arduinoMaster.varWireWrite(i, 0);
         oldPinValuesOut[i] = 0;
-        auxOut[i] = 0;
-        auxOutBool[i] = false;
+        helpOut[i] = 0;
+        helpOutBool[i] = false;
     }
 
-    alteraSaida();
+    alterOut();
 }
 
 //Função do loop principal
@@ -225,12 +223,12 @@ void loop(){
     read_shift_regs();
     
     //altera a saída se existir alguma mudança
-    for(int i = 0; i < nCIs; i++){
+    for(int i = 0; i < nICs; i++){
         if (oldPinValuesOut[i] != arduinoMaster.varWireRead(i)){
-            alteraSaida();
+            alterOut();
             oldPinValuesOut[i] = arduinoMaster.varWireRead(i);
         }
     }
 
-    delay(Atraso);
+    delay(DELAY);
 }
