@@ -3,11 +3,11 @@
 #include <PushButton.h>
 
 //botao para cadastrar digital ADM
-#define pinButton 10
+#define pinButton 13
 
 // DEFINIÇÃO DO PINO DA TRAVA
-#define pinLock 2
-#define pinLockSensor 3
+#define pinLock 9
+#define pinLockSensor 10
 
 // INSTANCIANDO OBJETOS
 SoftwareSerial mySerial(11, 12); //pin 11 = Tx do sensor, pin 12 Rx do sensor
