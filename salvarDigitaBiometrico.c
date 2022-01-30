@@ -146,6 +146,7 @@ int getFingerprintIDez() {
     Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
     Serial.print(" com confiança de "); Serial.println(finger.confidence);
     Serial.println("Porta Destravada");
+    delay(3000);
     return finger.fingerID;
 }
 
@@ -173,7 +174,7 @@ void setup() {
 
 void loop() {
 
-    if(digitalRead(pinLockSensor) == HIGH){
+    if(digitalRead(pinLockSensor) == HIGH && digitalRead(pinLock) == HIGH){
         digitalWrite(pinLock, LOW);
         Serial.println("Porta Travada");
     }

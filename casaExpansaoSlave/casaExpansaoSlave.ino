@@ -40,9 +40,10 @@ const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock I
 byte pinValues[nICs];
 byte oldPinValues[nICs];
 byte pinValuesOut[nICs];
-byte oldPinValuesOut[nICs];
 byte helpOut[nICs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
 bool helpOutBool[nICs];
+
+bool alter = false; //variavel para alterar as saidas
 
 //auxiliares para converter bases
 bool helpBin[BYTES];
@@ -105,7 +106,10 @@ void read_shift_regs(){
 
         //condicao para impedir a alteração com o botao pressionado
         if(pinValues[IC] == 0 && helpOutBool[IC]){
-            arduinoMaster.varWireWrite(IC, helpOut[IC]);
+            if(helpOut[IC] != arduinoMaster.varWireRead(IC)){
+                arduinoMaster.varWireWrite(IC, helpOut[IC]);
+                alter = true;
+            }
             helpOutBool[IC] = false;
         }
 
@@ -123,12 +127,14 @@ void read_shift_regs(){
             }
             arduinoMaster.varWireWrite(IC, convBinDec());
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            alter = true;
         }
 
         //desliga as saidas após tempo pressionado
         if((millis() - time) > buttonTime * 2 && helpOutBool[IC]){
             arduinoMaster.varWireWrite(IC, 0);
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            alter = true;
         }
 
         //desliga todas as saidas após tempo pressionado
@@ -137,6 +143,7 @@ void read_shift_regs(){
                 arduinoMaster.varWireWrite(i, 0);
             }
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            alter = true;
         }
     }
 }
@@ -208,7 +215,6 @@ void setup(){
         pinValues[i] = 0;
         oldPinValues[i] = 0;
         arduinoMaster.varWireWrite(i, 0);
-        oldPinValuesOut[i] = 0;
         helpOut[i] = 0;
         helpOutBool[i] = false;
     }
@@ -223,11 +229,9 @@ void loop(){
     read_shift_regs();
     
     //altera a saída se existir alguma mudança
-    for(int i = 0; i < nICs; i++){
-        if (oldPinValuesOut[i] != arduinoMaster.varWireRead(i)){
-            alterOut();
-            oldPinValuesOut[i] = arduinoMaster.varWireRead(i);
-        }
+    if(alter){
+        alterOut();
+        alter = false;
     }
 
     delay(DELAY);
