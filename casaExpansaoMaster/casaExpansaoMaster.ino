@@ -22,7 +22,7 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 PushButton button(pinButton);
 
 // DECLARAÇÃO DAS VARIÁVEIS E FUNCOES
-uint8_t numID = 1;
+uint8_t numID = 0;
 bool save = false;
 
 OneWire oneWire(9);
@@ -155,20 +155,11 @@ int getFingerprintIDez() {
     if (p != FINGERPRINT_OK)  return -1;
 
     //Encontrou uma digital!
-    if (finger.fingerID == 0) {
-        Serial.print("Modo Administrador!");
-
-        numID++;
-        saveModeID(numID);
-        return 0; 
-    }else{
-
-        digitalWrite(pinLock, HIGH);
-        Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
-        Serial.print(" com confiança de "); Serial.println(finger.confidence);
-        Serial.println("Porta destravada");
-        return finger.fingerID;
-    }
+    digitalWrite(pinLock, HIGH);
+    Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
+    Serial.print(" com confiança de "); Serial.println(finger.confidence);
+    Serial.println("Porta Destravada");
+    return finger.fingerID;
 }
 
 void setup() {
@@ -208,8 +199,9 @@ void loop() {
 
     if(digitalRead(pinLockSensor) == HIGH){
         digitalWrite(pinLock, LOW);
+        Serial.println("Porta Travada");
     }
-    Serial.print("\nStatus\n");  
+    Serial.print("\nStatus\n");
     for(int i = 0; i < 3; i++){
             Serial.print(arduinoSlave.varWireRead(address, i));
             Serial.print("\n");
@@ -232,7 +224,8 @@ void loop() {
     }
 
     if(save){
-        saveModeID(0);
+        saveModeID(numID);
+        numID++;
         save = false;
     }
 

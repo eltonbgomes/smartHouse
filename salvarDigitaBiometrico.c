@@ -1,12 +1,6 @@
 #include <SoftwareSerial.h>
 #include <Adafruit_Fingerprint.h>
 #include <PushButton.h>
-#include <A2a.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-
-// DEFINIÇÃO DO ENDEREÇO DO SLAVE
-#define address 0x08
 
 //botao para cadastrar digital ADM
 #define pinButton 10
@@ -22,16 +16,8 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 PushButton button(pinButton);
 
 // DECLARAÇÃO DAS VARIÁVEIS E FUNCOES
-uint8_t numID = 1;
+uint8_t numID = 10;
 bool save = false;
-
-OneWire oneWire(9);
-DallasTemperature sensor(&oneWire);
- 
-int nTempSensors = 0;
-float tempC;
-
-A2a arduinoSlave;
 
 uint8_t read(int p, int ID){
     while (p != FINGERPRINT_OK) {
@@ -119,6 +105,7 @@ uint8_t saveModeID(uint8_t saveID) {
         return p;
     } else if (p == FINGERPRINT_ENROLLMISMATCH) {
         Serial.println("As digitais não batem");
+        numID--;
         return p;
     } else {
         Serial.println("Erro desconhecido");
@@ -155,24 +142,16 @@ int getFingerprintIDez() {
     if (p != FINGERPRINT_OK)  return -1;
 
     //Encontrou uma digital!
-    if (finger.fingerID == 0) {
-        Serial.print("Modo Administrador!");
-
-        numID++;
-        saveModeID(numID);
-        return 0; 
-    }else{
-
-        digitalWrite(pinLock, HIGH);
-        Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
-        Serial.print(" com confiança de "); Serial.println(finger.confidence);
-        Serial.println("Porta destravada");
-        return finger.fingerID;
-    }
+    digitalWrite(pinLock, HIGH);
+    Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
+    Serial.print(" com confiança de "); Serial.println(finger.confidence);
+    Serial.println("Porta Destravada");
+    return finger.fingerID;
 }
 
 void setup() {
 
+    Serial.begin(9600);
     //configuracao do sensor biometrico
     pinMode(pinLock, OUTPUT);
     pinMode(pinLockSensor, INPUT);
@@ -190,39 +169,13 @@ void setup() {
             delay(1500);
         }
     }
-
-    // INICIA A COMUNICAÇÃO ENTRE ARDUINOS
-    arduinoSlave.begin();
-
-    sensor.begin(); 
-    Serial.begin(9600);
-    Serial.println("Localizando Dispositivos ...");
-    Serial.print("Encontrados ");
-    nTempSensors = sensor.getDeviceCount();
-    Serial.print(nTempSensors, DEC);
-    Serial.println(" dispositivos.");
-    Serial.println("\n");
 }
 
 void loop() {
 
     if(digitalRead(pinLockSensor) == HIGH){
         digitalWrite(pinLock, LOW);
-    }
-    Serial.print("\nStatus\n");  
-    for(int i = 0; i < 3; i++){
-            Serial.print(arduinoSlave.varWireRead(address, i));
-            Serial.print("\n");
-    }
-    sensor.requestTemperatures(); 
- 
-    for (int i = 0;  i < nTempSensors;  i++) {
-        Serial.print("Sensor ");
-        Serial.print(i+1);
-        Serial.print(": ");
-        tempC = sensor.getTempCByIndex(i);
-        Serial.print(tempC);
-        Serial.println("ºC");
+        Serial.println("Porta Travada");
     }
 
     button.button_loop();
@@ -232,7 +185,8 @@ void loop() {
     }
 
     if(save){
-        saveModeID(0);
+        saveModeID(numID);
+        numID++;
         save = false;
     }
 
