@@ -16,9 +16,9 @@
 #define nTempSensors 2
 
 // DEFINIÇÃO DO PINO DA TRAVA
-#define pinBioSensor 8 //saida para ligar o sensor biometrico
-#define pinLock 9 //saida para travar ou destravar a porta
-#define pinLockSensor 10 // input do sensor fechadura
+#define pinBioSensor 3 //saida para ligar o sensor biometrico
+#define pinLock 5 //saida para travar ou destravar a porta
+#define pinLockSensor 6 // input do sensor fechadura
 
 //sensor de luminosidade
 #define pinLuxSensor A0
@@ -28,7 +28,7 @@
 int lux = 0;
 
 // INSTANCIANDO OBJETOS
-SoftwareSerial mySerial(11, 12); //pin 11 = Tx do sensor, pin 12 Rx do sensor
+SoftwareSerial mySerial(8, 9); //pin 11 = Tx do sensor, pin 12 Rx do sensor
 
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
