@@ -16,19 +16,20 @@
  *Variavel 6
  *Variavel 7
  *Variavel 8
- *Variavel 9
+ *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
 */
 
 #include <A2a.h>
 
+#define boolArduino 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
 // Definições de Labels
-#define nICs  3               //Registra o número de CIs cascateados
+#define nICs  3              //Registra o número de CIs cascateados
 #define BYTES 8
-#define readTime 50  //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
+#define readTime 50          //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define DELAY  100           //Registra o atraso de segurança entre leituras, (milesegundos)
 #define address 0x08         //address usado na comunicacao I2C entre arduino
-#define buttonTime 750        //tempo de intervalo segura botao
+#define buttonTime 750       //tempo de intervalo segura botao
 
 // Declaração de constantes globais 165
 const int ploadPin165        = 6;    //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
@@ -49,13 +50,18 @@ bool alter = false; //variavel para alterar as saidas
 bool helpBin[BYTES];
 bool bin[BYTES];
 
+//auxiliares para impedir o acesso de condicionais quando ocorrer o desligamento por tempo
+bool helpEsp = false;
+bool helpByte = false;
+bool helpAll = false;
+
 // Declaração de constantes globais 595
 const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
 const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
 const int dataPin595  = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
 
 //usado para contar o tempo do botao pressionado
-long time;
+unsigned long time;
 
 //inicia objeto para comunicacao arduino
 A2a arduinoMaster;
@@ -67,7 +73,7 @@ void read_shift_regs(){
     byte bytesValOut[nICs];
     for(int i = 0; i < nICs; i++){
         bytesVal[i] = 0;
-        bytesValOut[i] = arduinoMaster.varWireRead(i);;
+        bytesValOut[i] = arduinoMaster.varWireRead(i);
     }
 
     //desloca todos os bits para o pino de dados para leitura
@@ -101,6 +107,7 @@ void read_shift_regs(){
             time = millis();
             helpOut[IC] = bytesValOut[IC];
             helpOutBool[IC] = true;
+            helpEsp = helpByte = helpAll = true;
             oldPinValues[IC] = pinValues[IC];
         }
 
@@ -114,7 +121,7 @@ void read_shift_regs(){
         }
 
         //condiçao para funcionar apenas com o botao 07 IC 0
-        if((millis() - time) > buttonTime && helpOutBool[IC] && pinValues[IC] == 128 && IC == 0){
+        if((millis() - time) > buttonTime && helpOutBool[IC] && helpEsp && pinValues[IC] == 128 && IC == 0){
             convDecBin(IC); // converte o valor decimal para binario
             
             //desliga as saidas desejadas
@@ -127,22 +134,25 @@ void read_shift_regs(){
             }
             arduinoMaster.varWireWrite(IC, convBinDec());
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            helpEsp = false;
             alter = true;
         }
 
         //desliga as saidas após tempo pressionado
-        if((millis() - time) > buttonTime * 2 && helpOutBool[IC]){
+        if((millis() - time) > buttonTime * 2 && helpOutBool[IC] && helpByte){
             arduinoMaster.varWireWrite(IC, 0);
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            helpByte = false;
             alter = true;
         }
 
         //desliga todas as saidas após tempo pressionado
-        if((millis() - time) > buttonTime * 3 && helpOutBool[IC]){
+        if((millis() - time) > buttonTime * 3 && helpOutBool[IC] && helpAll){
             for(int i = 0; i < nICs; i++){
                 arduinoMaster.varWireWrite(i, 0);
             }
             helpOut[IC] = arduinoMaster.varWireRead(IC);
+            helpAll = false;
             alter = true;
         }
     }
@@ -195,6 +205,8 @@ void setup(){
     // FUNÇÕES PARA COMUNICAÇÃO
     arduinoMaster.onReceive(receiveData);
     arduinoMaster.onRequest(SendData);
+
+    arduinoMaster.varWireWrite(boolArduino, false);
     
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -230,6 +242,7 @@ void loop(){
     
     //altera a saída se existir alguma mudança
     if(alter){
+        arduinoMaster.varWireWrite(boolArduino, true);
         alterOut();
         alter = false;
     }
