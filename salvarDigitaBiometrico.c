@@ -6,11 +6,11 @@
 #define pinButton 13
 
 // DEFINIÇÃO DO PINO DA TRAVA
-#define pinLock 9
-#define pinLockSensor 10
+#define pinLock 5
+#define pinLockSensor 6
 
 // INSTANCIANDO OBJETOS
-SoftwareSerial mySerial(11, 12); //pin 11 = Tx do sensor, pin 12 Rx do sensor
+SoftwareSerial mySerial(8, 9); //pin 8 = Tx do sensor, pin 9 Rx do sensor
 
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 PushButton button(pinButton);

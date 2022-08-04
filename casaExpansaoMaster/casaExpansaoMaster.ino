@@ -40,7 +40,7 @@ unsigned long time;
 
 A2a arduinoSlave;
 
-int getFingerprintIDez() {
+int getFingerprintID() {
     uint8_t p = finger.getImage();
     if (p != FINGERPRINT_OK)  return -1;
 
@@ -138,8 +138,10 @@ void loop() {
 
     //condição para ligar o sensor biometrico
     if(digitalRead(pinLockSensor) == HIGH){
-        digitalWrite(pinBioSensor, HIGH);
-        getFingerprintIDez();
+        if(digitalRead(pinBioSensor) == LOW){
+            digitalWrite(pinBioSensor, HIGH);
+        }
+        getFingerprintID();
     }
 
     //condição para fazer a leitura de dados do slave
