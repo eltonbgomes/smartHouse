@@ -6,7 +6,7 @@
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
 
-/*Variaveis I2C
+/*Variaveis I2C ligar A4 e A5 entre arduinos
  *Variavel 0 -> valor da saida para o IC 0
  *Variavel 1 -> valor da saida para o IC 1
  *Variavel 2 -> valor da saida para o IC 2

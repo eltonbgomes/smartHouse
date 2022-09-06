@@ -1,3 +1,12 @@
+/********************************************************************************\
+ * Programa Expansão de Entradas e saídas do Arduino, utilizando Shift Register *
+ * CI utilizado: 74HC165 com 74HC595                                            *
+ * Por: Elton Barbosa Gomes                                                     *
+ * Data: 05/09/2022                                                             *
+ * Créditos: Baseado no playground.arduino.cc                                   *
+\********************************************************************************/
+//ligar A5 e A4 dos arduinos (utilização da comunicação I2C)
+
 #include <SoftwareSerial.h>
 #include <Adafruit_Fingerprint.h>
 #include <A2a.h>
@@ -15,24 +24,28 @@
 //numero de sensores de temperatura
 #define nTempSensors 2
 
+//Porta sensor temperatura
+#define pinDataTemp 2
+
 // DEFINIÇÃO DO PINO DA TRAVA
-#define pinBioSensor 3 //saida para ligar o sensor biometrico
-#define pinLock 5 //saida para travar ou destravar a porta
-#define pinLockSensor 6 // input do sensor fechadura
+#define pinOutputBioSensor 3 //saida para ligar o sensor biometrico
+#define pinInputButtonLock 4 //entrada para travar porta
+#define pinOutputLockDoor 5 //saida para travar ou destravar a porta
+#define pinInputLockSensor 6 // input do sensor fechadura
 
 //sensor de luminosidade
-#define pinLuxSensor A0
+#define pinAnalogLuxSensor A0
 
 #define delayTime 1000
 
 int lux = 0;
 
 // INSTANCIANDO OBJETOS
-SoftwareSerial mySerial(8, 9); //pin 11 = Tx do sensor, pin 12 Rx do sensor
+SoftwareSerial mySerial(8, 9); //pin 8 = Tx do sensor, pin 9 Rx do sensor (colocar divisor tensao)
 
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
-OneWire oneWire(2);
+OneWire oneWire(pinDataTemp);
 DallasTemperature sensor(&oneWire);
  
 float tempC[nTempSensors];
@@ -54,12 +67,12 @@ int getFingerprintID() {
     }
 
     //Encontrou uma digital!
-    digitalWrite(pinLock, HIGH);
+    digitalWrite(pinOutputLockDoor, HIGH);
     Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
     Serial.print(" com confiança de "); Serial.println(finger.confidence);
     Serial.println("Porta Destravada");
-    delay(delayTime*3);
-    digitalWrite(pinBioSensor, LOW);
+    delay(delayTime*5);
+    digitalWrite(pinOutputBioSensor, LOW);
     return finger.fingerID;
 }
 
@@ -85,7 +98,7 @@ void readStatusSlave(){
 }
 
 void readLux(){
-    lux = analogRead(pinLuxSensor);
+    lux = analogRead(pinAnalogLuxSensor);
     // print out the value you read:
     Serial.println("\nLuminosidade: ");
     Serial.println(lux);
@@ -100,14 +113,15 @@ void setup() {
     readTemp();
 
     //configuracao do sensor biometrico
-    pinMode(pinLock, OUTPUT);
-    digitalWrite(pinLock, LOW);
-    pinMode(pinLockSensor, INPUT);
-    pinMode(pinBioSensor, OUTPUT);
-    digitalWrite(pinBioSensor, HIGH);
+    pinMode(pinOutputLockDoor, OUTPUT);
+    digitalWrite(pinOutputLockDoor, LOW);
+    pinMode(pinInputLockSensor, INPUT);
+    pinMode(pinInputButtonLock, INPUT);
+    pinMode(pinOutputBioSensor, OUTPUT);
+    digitalWrite(pinOutputBioSensor, HIGH);
 
     //pino sensor de luminosidade
-    pinMode(pinLuxSensor,INPUT);
+    pinMode(pinAnalogLuxSensor,INPUT);
 
     finger.begin(57600);
 
@@ -122,26 +136,37 @@ void setup() {
         }
     }
     delay(delayTime);
-    digitalWrite(pinBioSensor, LOW);
+    digitalWrite(pinOutputBioSensor, LOW);
 }
 
 void loop() {
 
     //condição para travar a porta
-    if(digitalRead(pinLockSensor) == HIGH && digitalRead(pinLock) == HIGH){
+    if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinInputLockSensor) == HIGH && digitalRead(pinInputButtonLock) == HIGH){
         delay(delayTime*3);
-        if(digitalRead(pinLockSensor) == HIGH){
-            digitalWrite(pinLock, LOW);
+        if(digitalRead(pinInputLockSensor) == HIGH){
+            digitalWrite(pinOutputLockDoor, LOW);
             Serial.println("Porta Travada");
         }
     }
 
+    //condição para destravar a porta
+    if(digitalRead(pinOutputLockDoor) == LOW && digitalRead(pinInputButtonLock) == LOW){
+        digitalWrite(pinOutputLockDoor, HIGH);
+        Serial.println("Porta Destravada via Interruptor");
+    }
+
     //condição para ligar o sensor biometrico
-    if(digitalRead(pinLockSensor) == HIGH){
-        if(digitalRead(pinBioSensor) == LOW){
-            digitalWrite(pinBioSensor, HIGH);
+    if(digitalRead(pinOutputLockDoor) == LOW){
+        if(digitalRead(pinOutputBioSensor) == LOW){
+            digitalWrite(pinOutputBioSensor, HIGH);
         }
         getFingerprintID();
+    }
+
+    //condição para desligar o sensor biometrico
+    if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinOutputBioSensor) == HIGH){
+        digitalWrite(pinOutputBioSensor, LOW);
     }
 
     //condição para fazer a leitura de dados do slave
