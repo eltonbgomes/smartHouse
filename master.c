@@ -11,8 +11,6 @@
 
 
 // DEFINIÇÃO DO ENDEREÇO DO SLAVE
-#define address 8
-#define address 9
 
 #define delayTime 1500
 
@@ -22,20 +20,29 @@ void setup() {
     Serial.begin(9600);
     // INICIA A COMUNICAÇÃO ENTRE ARDUINOS
     arduinoSlave.begin();
+
+    Serial.println("INICIALIZANDO");
+    for(int i = 8; i < 10; i++){
+        for(int j = 10; j < 14; j++){
+            arduinoSlave.pinWireMode(i, j, OUTPUT);
+        }
+    }
 }
 
 void loop() {
 
+    Serial.println("LIGANDO");
     for(int i = 8; i < 10; i++){
-        for(int j = 0; j < 4, j++){
-            arduinoSlave.varWireWrite(i, j, HIGH);
+        for(int j = 10; j < 14; j++){
+            arduinoSlave.digitalWireWrite(i, j, HIGH);
             delay(delayTime);
         }
     }
 
+    Serial.println("DESLIGANDO");
     for(int i = 8; i < 10; i++){
-        for(int j = 0; j < 4, j++){
-            arduinoSlave.varWireWrite(i, j, LOW);
+        for(int j = 10; j < 14; j++){
+            arduinoSlave.digitalWireWrite(i, j, LOW);
             delay(delayTime);
         }
     }
