@@ -192,7 +192,7 @@ void receiveData() {
   arduinoMaster.receiveData(); 
 }
 
-void SendData() {
+void sendData() {
   arduinoMaster.sendData(); 
 }
 
@@ -204,7 +204,7 @@ void setup(){
 
     // FUNÇÕES PARA COMUNICAÇÃO
     arduinoMaster.onReceive(receiveData);
-    arduinoMaster.onRequest(SendData);
+    arduinoMaster.onRequest(sendData);
 
     arduinoMaster.varWireWrite(boolArduino, false);
     
