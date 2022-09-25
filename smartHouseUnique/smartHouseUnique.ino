@@ -19,7 +19,11 @@
  *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
 */
 
+#include <SoftwareSerial.h>
+#include <Adafruit_Fingerprint.h>
 #include <A2a.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define boolArduino 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
@@ -30,6 +34,36 @@
 #define DELAY  100           //Registra o atraso de segurança entre leituras, (milesegundos)
 #define address 0x08         //address usado na comunicacao I2C entre arduino
 #define buttonTime 750       //tempo de intervalo segura botao
+
+//numero de sensores de temperatura
+#define nTempSensors 2
+
+//Porta sensor temperatura
+#define pinDataTemp 9
+
+// DEFINIÇÃO DO PINO DA TRAVA
+#define pinOutputBioSensor 10 //saida para ligar o sensor biometrico
+#define pinInputButtonLock 11 //entrada para travar porta
+#define pinOutputLockDoor 12 //saida para travar ou destravar a porta
+#define pinInputLockSensor 13 // input do sensor fechadura
+
+//sensor de luminosidade
+#define pinAnalogLuxSensor A0
+
+#define delayTime 1000
+
+int lux = 0;
+
+// INSTANCIANDO OBJETOS
+SoftwareSerial mySerial(A1, A2); //pin A1 = Tx do sensor, pin A2 Rx do sensor (colocar divisor tensao)
+
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
+OneWire oneWire(pinDataTemp);
+DallasTemperature sensor(&oneWire);
+ 
+float tempC[nTempSensors];
+unsigned long timeSensor;
 
 // Declaração de constantes globais 165
 const int ploadPin165        = 6;    //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
@@ -65,6 +99,57 @@ unsigned long time;
 
 //inicia objeto para comunicacao arduino
 A2a arduinoMaster;
+
+int getFingerprintID() {
+    uint8_t p = finger.getImage();
+    if (p != FINGERPRINT_OK)  return -1;
+
+    p = finger.image2Tz();
+    if (p != FINGERPRINT_OK)  return -1;
+
+    p = finger.fingerFastSearch();
+    if (p != FINGERPRINT_OK){
+        Serial.println("Digital NAO reconhecida");
+        return -1;
+    }
+
+    //Encontrou uma digital!
+    digitalWrite(pinOutputLockDoor, HIGH);
+    Serial.print("ID encontrado #"); Serial.print(finger.fingerID); 
+    Serial.print(" com confiança de "); Serial.println(finger.confidence);
+    Serial.println("Porta Destravada");
+    delay(delayTime*5);
+    digitalWrite(pinOutputBioSensor, LOW);
+    return finger.fingerID;
+}
+
+void readTemp(){
+    sensor.requestTemperatures();
+    for (int i = 0;  i < nTempSensors;  i++) {
+        Serial.print("Sensor ");
+        Serial.print(i+1);
+        Serial.print(": ");
+        tempC[i] = sensor.getTempCByIndex(i);
+        Serial.print(tempC[i]);
+        Serial.println("ºC");
+    }
+    readLux();
+    timeSensor = millis();
+}
+
+void readStatusOut(){
+    Serial.println("\nStatus");
+    for(int i = 0; i < nICs; i++){
+        Serial.println(arduinoMaster.varWireRead(i));
+    }
+}
+
+void readLux(){
+    lux = analogRead(pinAnalogLuxSensor);
+    // print out the value you read:
+    Serial.println("\nLuminosidade: ");
+    Serial.println(lux);
+}
 
 //Função para definir um rotina shift-in, lê os dados do 74HC165
 void read_shift_regs(){
@@ -189,24 +274,42 @@ void alterOut(){
 }
 
 void receiveData() {
-    arduinoMaster.receiveData(); 
+  arduinoMaster.receiveData(); 
 }
 
 void sendData() {
-    arduinoMaster.sendData(); 
+  arduinoMaster.sendData(); 
 }
 
 // Configuração do Programa
 void setup(){
+    Serial.begin(9600);
 
     // INICIA A COMUNICAÇÃO ENTRE ARDUINOS COMO SLAVE NO ENDEREÇO DEFINIDO
     arduinoMaster.begin(address);
+
+    //sensor temperatura
+    sensor.begin();
+
+    //leitura sensores
+    readTemp();
 
     // FUNÇÕES PARA COMUNICAÇÃO
     arduinoMaster.onReceive(receiveData);
     arduinoMaster.onRequest(sendData);
 
     arduinoMaster.varWireWrite(boolArduino, false);
+
+    //configuracao do sensor biometrico
+    pinMode(pinOutputLockDoor, OUTPUT);
+    digitalWrite(pinOutputLockDoor, LOW);
+    pinMode(pinInputLockSensor, INPUT);
+    pinMode(pinInputButtonLock, INPUT);
+    pinMode(pinOutputBioSensor, OUTPUT);
+    digitalWrite(pinOutputBioSensor, HIGH);
+
+    //pino sensor de luminosidade
+    pinMode(pinAnalogLuxSensor,INPUT);
     
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -232,6 +335,22 @@ void setup(){
     }
 
     alterOut();
+
+    //inicialização sensor biometrico
+    finger.begin(57600);
+
+    bool checkFinger = false;
+    while(!checkFinger){
+        if(finger.verifyPassword()){
+            Serial.println("Sensor biometrico encontrado!");
+            checkFinger = true;
+        }else{
+            Serial.println("Sensor biometrico não encontrado! Verifique a conexão e reinicie o sistema");
+            delay(delayTime*1.5);
+        }
+    }
+    delay(delayTime);
+    digitalWrite(pinOutputBioSensor, LOW);
 }
 
 //Função do loop principal
@@ -245,6 +364,45 @@ void loop(){
         arduinoMaster.varWireWrite(boolArduino, true);
         alterOut();
         alter = false;
+    }
+
+    //condição para travar a porta
+    if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinInputLockSensor) == HIGH && digitalRead(pinInputButtonLock) == HIGH){
+        delay(delayTime*3);
+        if(digitalRead(pinInputLockSensor) == HIGH){
+            digitalWrite(pinOutputLockDoor, LOW);
+            Serial.println("Porta Travada");
+        }
+    }
+
+    //condição para destravar a porta
+    if(digitalRead(pinOutputLockDoor) == LOW && digitalRead(pinInputButtonLock) == LOW){
+        digitalWrite(pinOutputLockDoor, HIGH);
+        Serial.println("Porta Destravada via Interruptor");
+    }
+
+    //condição para ligar o sensor biometrico
+    if(digitalRead(pinOutputLockDoor) == LOW){
+        if(digitalRead(pinOutputBioSensor) == LOW){
+            digitalWrite(pinOutputBioSensor, HIGH);
+        }
+        getFingerprintID();
+    }
+
+    //condição para desligar o sensor biometrico
+    if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinOutputBioSensor) == HIGH){
+        digitalWrite(pinOutputBioSensor, LOW);
+    }
+
+    //condição para fazer a leitura de dados do slave
+    if(arduinoMaster.varWireRead(boolArduino)){
+        readStatusOut();
+        arduinoMaster.varWireWrite(boolArduino, false);
+    }
+
+    //fazer a leiura dos sensores
+    if(millis() - timeSensor > 45000){
+        readTemp();
     }
 
     delay(DELAY);
