@@ -4,6 +4,7 @@
 #define pinFood 9  //ham/mushrooms
 #define pinCast 10 //SD/GFB
 #define pinCastFast 11 //castFast
+#define pinGamel 12 //castFast
 
 #define delayHam 362000
 #define delayMush 266000
@@ -36,6 +37,7 @@ void setup() {
     pinMode(pinFood, INPUT); //ham/mushrooms
     pinMode(pinCast, INPUT); //SD/GFB
     pinMode(pinCastFast, INPUT); //SD/GFB
+    pinMode(pinGamel, INPUT); //SD/GFB
     pinMode(A0, OUTPUT);
 
     randomSeed(analogRead(A0)); //semente para gerar numeros aleatorios
@@ -43,7 +45,18 @@ void setup() {
 
 void loop() {
 
-    if(!digitalRead(pinOn)){
+    if (!digitalRead(pinOn) && digitalRead(pinGamel)) {
+            delay(120);
+            Keyboard.write(49);
+            delay(112);
+            Keyboard.write(50);
+            delay(97);
+            Keyboard.write(51);
+            delay(86);
+            Keyboard.write(52);
+        }
+
+    if(!digitalRead(pinOn) && !digitalRead(pinGamel)){
         if (!digitalRead(pinFood)) { //ham
             pressButton(delayHam, 49, timeFood, rangeWait);
         }
@@ -61,7 +74,8 @@ void loop() {
         if (digitalRead(pinCastFast)) {
             pressButton(delayPotion, 57, timePotion, rangeFast);
             if(count >= 10){
-                pressButton(delayFastSD, 51, timeCast, rangeFast);
+                delay(1012);
+                Keyboard.write(51);
                 count = 0;
             }
         }
