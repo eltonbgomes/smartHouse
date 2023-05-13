@@ -45,7 +45,8 @@ byte pinValuesOut[nICs];
 byte helpOut[nICs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
 bool helpOutBool[nICs];
 
-bool alter = false; //variavel para alterar as saidas
+bool alterSlave = false; //variavel para alterar as saidas
+bool alterMaster = false; //variavel para alterar no Master e enviar para nuvem
 
 //auxiliares para converter bases
 bool helpBin[BYTES];
@@ -116,7 +117,7 @@ void read_shift_regs(){
         if(pinValues[IC] == 0 && helpOutBool[IC]){
             if(helpOut[IC] != arduinoMaster.varWireRead(IC)){
                 arduinoMaster.varWireWrite(IC, helpOut[IC]);
-                alter = true;
+                alterSlave = true;
             }
             helpOutBool[IC] = false;
         }
@@ -136,7 +137,7 @@ void read_shift_regs(){
             arduinoMaster.varWireWrite(IC, convBinDec());
             helpOut[IC] = arduinoMaster.varWireRead(IC);
             helpEsp = false;
-            alter = true;
+            alterSlave = true;
         }
 
         //desliga as saidas após tempo pressionado
@@ -144,7 +145,7 @@ void read_shift_regs(){
             arduinoMaster.varWireWrite(IC, 0);
             helpOut[IC] = arduinoMaster.varWireRead(IC);
             helpByte = false;
-            alter = true;
+            alterSlave = true;
         }
 
         //desliga todas as saidas após tempo pressionado
@@ -154,7 +155,7 @@ void read_shift_regs(){
             }
             helpOut[IC] = arduinoMaster.varWireRead(IC);
             helpAll = false;
-            alter = true;
+            alterSlave = true;
         }
     }
 }
@@ -186,6 +187,15 @@ void alterOut(){
         digitalWrite(latchPin595, LOW);
         shiftOut(dataPin595, clockPin595, LSBFIRST, arduinoMaster.varWireRead(i));
         digitalWrite(latchPin595, HIGH);
+    }
+}
+
+void checkStatusMaster(){
+    for (int i = 0; i < nICs; ++i){
+        if(arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3)){
+            arduinoMaster.varWireRead(i) = arduinoMaster.varWireRead(i + 3)
+            alterMaster = true;
+        }
     }
 }
 
@@ -240,17 +250,20 @@ void loop(){
     //Lê todos as portas externas
 
     read_shift_regs();
+
+    checkStatusMaster();
     
     //altera a saída se existir alguma mudança
-    if(alter){
+    if(alterSlave){
         arduinoMaster.varWireWrite(boolArduinoMaster, true);
         alterOut();
-        alter = false;
+        alterSlave = false;
     }
 
-    if(arduinoMaster.varWireRead(boolArduinodSlave)){
-        arduinoMaster.varWireWrite(boolArduinodSlave, false);
+    //altera a saída se existir alguma mudança no Master (nuvem)
+    if(alterMaster){
         alterOut();
+        alterMaster = false;
     }
 
     delay(DELAY);

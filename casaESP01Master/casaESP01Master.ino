@@ -3,7 +3,7 @@
      AUTOR:   BrincandoComIdeias
      LINK:    https://www.youtube.com/brincandocomideias ; https://cursodearduino.net/ ; https://cursoderobotica.net
      COMPRE:  https://www.arducore.com.br/
-     SKETCH:  Integrando Variaveis entre 2 Arduinos - Esp01 Master
+	 SKETCH:  Integrando Variaveis entre 2 Arduinos - Esp01 Master
      DATA:    26/01/2020
 */
 
@@ -16,61 +16,108 @@
 
 // INSTANCIANDO OBJETOS
 AdafruitIO_Feed *ci595_0 = io.feed("ci595_0");
+AdafruitIO_Feed *ci595_1 = io.feed("ci595_1");
+AdafruitIO_Feed *ci595_2 = io.feed("ci595_2");
 
 A2a arduinoSlave;
 
 // DECLARAÇÃO DE FUNÇÕES
+bool getStatusSlaveIO();
+
 void configuraMQTT();
 
 void retorno_ci595_0(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
+void retorno_ci595_1(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
+void retorno_ci595_2(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
 
 void setup() {
-  Serial.begin(9600);
-  while (! Serial);
+	Serial.begin(9600);
+	while (! Serial);
 
-  configuraMQTT(); //conexao internet e adaFruit
+	configuraMQTT(); //conexao internet e adaFruit
 
-  arduinoSlave.begin(0, 2);
+	arduinoSlave.begin(0, 2);
 
-  Serial.println("Atualizando valor do Display de LED");
+	Serial.println("Atualizando valor do Display de LED");
 
-  ci595_0->get();
+	ci595_0->get();
+	ci595_1->get();
+	ci595_2->get();
 
-  io.run();
-  
-  Serial.println("Fim Setup");
+	io.run();
+
+	Serial.println("Fim Setup");
 }
 
 void loop() {
-  io.run();
+	io.run();
 
-  if(arduinoSlave.varWireRead(endereco, 9)){
-        arduinoSlave.varWireWrite(endereco, 9, false); //envia valor para arduino
-    ci595_0->save(arduinoSlave.varWireRead(endereco, 0)); //envia informações para AdaFruit
-  }
+	if(getStatusSlaveIO()){
+		arduinoSlave.varWireWrite(endereco, 9, false);
 
+		if(arduinoSlave.varWireRead(endereco, 0) != arduinoSlave.varWireRead(endereco, 3)){
+			ci595_0->save(arduinoSlave.varWireRead(endereco, 0)); //envia informações para AdaFruit
+		}
+
+		if(arduinoSlave.varWireRead(endereco, 1) != arduinoSlave.varWireRead(endereco, 4)){
+			ci595_1->save(arduinoSlave.varWireRead(endereco, 1)); //envia informações para AdaFruit
+		}
+
+		if(arduinoSlave.varWireRead(endereco, 2) != arduinoSlave.varWireRead(endereco, 5)){
+			ci595_2->save(arduinoSlave.varWireRead(endereco, 2)); //envia informações para AdaFruit
+		}
+	}
+}
+
+bool getStatusSlaveIO(){
+	if(arduinoSlave.varWireRead(endereco, 9)){
+		return true;
+	}else{
+		return false;
+	}
 }
 
 // IMPLEMENTO DE FUNÇÕES
 void configuraMQTT() {
-  Serial.print("Conectando ao Adafruit IO");
-  io.connect();
+	Serial.print("Conectando ao Adafruit IO");
+	io.connect();
 
-  ci595_0->onMessage(retorno_ci595_0);
+	ci595_0->onMessage(retorno_ci595_0);
+	ci595_1->onMessage(retorno_ci595_0);
+	ci595_2->onMessage(retorno_ci595_0);
 
-  while (io.status() < AIO_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
+	while (io.status() < AIO_CONNECTED) {
+		Serial.print(".");
+		delay(500);
+	}
 
-  Serial.println();
-  Serial.println(io.statusText());
+	Serial.println();
+	Serial.println(io.statusText());
 }
 
 void retorno_ci595_0(AdafruitIO_Data *data){
-  Serial.print("Controle Recebido <- ");  
-  Serial.println(data->value()); //recebe valor do portal ADAFruit
-  
-  arduinoSlave.varWireWrite(endereco, 0, byte(data->toInt())); //envia valor para arduino
-  arduinoSlave.varWireWrite(endereco, 8, true);
+	Serial.print("Controle Recebido <- ");  
+	Serial.println(data->value()); //recebe valor do portal ADAFruit
+
+	if(!getStatusSlaveIO()){
+		arduinoSlave.varWireWrite(endereco, 3, byte(data->toInt())); //envia valor para arduino
+	}
+}
+
+void retorno_ci595_1(AdafruitIO_Data *data){
+	Serial.print("Controle Recebido <- ");  
+	Serial.println(data->value()); //recebe valor do portal ADAFruit
+
+	if(!getStatusSlaveIO()){
+		arduinoSlave.varWireWrite(endereco, 4, byte(data->toInt())); //envia valor para arduino
+	}
+}
+
+void retorno_ci595_2(AdafruitIO_Data *data){
+	Serial.print("Controle Recebido <- ");  
+	Serial.println(data->value()); //recebe valor do portal ADAFruit
+
+	if(!getStatusSlaveIO()){
+		arduinoSlave.varWireWrite(endereco, 5, byte(data->toInt())); //envia valor para arduino
+	}
 }
