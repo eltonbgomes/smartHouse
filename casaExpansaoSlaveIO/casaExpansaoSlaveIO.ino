@@ -15,16 +15,17 @@
  *Variavel 5
  *Variavel 6
  *Variavel 7
- *Variavel 8
+ *Variavel 8 -> variavel usada para atualizar valores do slave quando houver mudança na nuven
  *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
 */
 
 #include <A2a.h>
 
-#define boolArduino 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
+#define boolArduinodSlave 8        //variavel usada para atualizar valores do slave quando houver mudança na nuven
+#define boolArduinoMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
 // Definições de Labels
-#define nICs  3              //Registra o número de CIs cascateados
+#define nICs  1              //Registra o número de CIs cascateados
 #define BYTES 8
 #define readTime 50          //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define DELAY  100           //Registra o atraso de segurança entre leituras, (milesegundos)
@@ -206,7 +207,7 @@ void setup(){
     arduinoMaster.onReceive(receiveData);
     arduinoMaster.onRequest(sendData);
 
-    arduinoMaster.varWireWrite(boolArduino, false);
+    arduinoMaster.varWireWrite(boolArduinoMaster, false);
     
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -242,9 +243,14 @@ void loop(){
     
     //altera a saída se existir alguma mudança
     if(alter){
-        arduinoMaster.varWireWrite(boolArduino, true);
+        arduinoMaster.varWireWrite(boolArduinoMaster, true);
         alterOut();
         alter = false;
+    }
+
+    if(arduinoMaster.varWireRead(boolArduinodSlave)){
+        arduinoMaster.varWireWrite(boolArduinodSlave, false);
+        alterOut();
     }
 
     delay(DELAY);
