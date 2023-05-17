@@ -12,7 +12,8 @@
 #include "config.h"
 
 // DEFINIÇÕES
-#define endereco 0x08
+#define enderecoIO 0x08
+#define enderecoSensors 0x09
 
 // INSTANCIANDO OBJETOS
 AdafruitIO_Feed *ci595_0 = io.feed("ci595_0");
@@ -53,24 +54,24 @@ void loop() {
 	io.run();
 
 	if(getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 9, false);
+		arduinoSlave.varWireWrite(enderecoIO, 9, false);
 
-		if(arduinoSlave.varWireRead(endereco, 0) != arduinoSlave.varWireRead(endereco, 3)){
-			ci595_0->save(arduinoSlave.varWireRead(endereco, 0)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(enderecoIO, 0) != arduinoSlave.varWireRead(enderecoIO, 3)){
+			ci595_0->save(arduinoSlave.varWireRead(enderecoIO, 0)); //envia informações para AdaFruit
 		}
 
-		if(arduinoSlave.varWireRead(endereco, 1) != arduinoSlave.varWireRead(endereco, 4)){
-			ci595_1->save(arduinoSlave.varWireRead(endereco, 1)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(enderecoIO, 1) != arduinoSlave.varWireRead(enderecoIO, 4)){
+			ci595_1->save(arduinoSlave.varWireRead(enderecoIO, 1)); //envia informações para AdaFruit
 		}
 
-		if(arduinoSlave.varWireRead(endereco, 2) != arduinoSlave.varWireRead(endereco, 5)){
-			ci595_2->save(arduinoSlave.varWireRead(endereco, 2)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(enderecoIO, 2) != arduinoSlave.varWireRead(enderecoIO, 5)){
+			ci595_2->save(arduinoSlave.varWireRead(enderecoIO, 2)); //envia informações para AdaFruit
 		}
 	}
 }
 
 bool getStatusSlaveIO(){
-	if(arduinoSlave.varWireRead(endereco, 9)){
+	if(arduinoSlave.varWireRead(enderecoIO, 9)){
 		return true;
 	}else{
 		return false;
@@ -83,8 +84,8 @@ void configuraMQTT() {
 	io.connect();
 
 	ci595_0->onMessage(retorno_ci595_0);
-	ci595_1->onMessage(retorno_ci595_0);
-	ci595_2->onMessage(retorno_ci595_0);
+	ci595_1->onMessage(retorno_ci595_1);
+	ci595_2->onMessage(retorno_ci595_2);
 
 	while (io.status() < AIO_CONNECTED) {
 		Serial.print(".");
@@ -100,7 +101,7 @@ void retorno_ci595_0(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 3, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(enderecoIO, 3, byte(data->toInt())); //envia valor para arduino
 	}
 }
 
@@ -109,7 +110,7 @@ void retorno_ci595_1(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 4, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(enderecoIO, 4, byte(data->toInt())); //envia valor para arduino
 	}
 }
 
@@ -118,6 +119,6 @@ void retorno_ci595_2(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 5, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(enderecoIO, 5, byte(data->toInt())); //envia valor para arduino
 	}
 }

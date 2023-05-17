@@ -5,7 +5,19 @@
  * Data: 05/09/2022                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
-//ligar A5 e A4 dos arduinos (utilização da comunicação I2C)
+
+/*Variaveis I2C ligar A4 e A5 entre arduinos
+ *Variavel 0 -> temperatura externa em °C
+ *Variavel 1 -> temperatura interna em °C
+ *Variavel 2 -> luminosidade em percentual - (0 escuro) - (100 claro)
+ *Variavel 3 -> status porta (false=aberta) (true=fechada)
+ *Variavel 4 -> status trava porta (false=travado) (true=destravado)
+ *Variavel 5
+ *Variavel 6
+ *Variavel 7
+ *Variavel 8
+ *Variavel 9
+*/
 
 #include <SoftwareSerial.h>
 #include <Adafruit_Fingerprint.h>
@@ -16,7 +28,7 @@
 //Registra o número de CIs cascateados
 #define nICs 3
 // DEFINIÇÃO DO ENDEREÇO DO SLAVE
-#define address 0x08
+#define address 0x09
 
 //numero de sensores de temperatura
 #define nTempSensors 2
@@ -92,8 +104,11 @@ void readTemp(){
 void readLux(){
     lux = analogRead(pinAnalogLuxSensor);
     // print out the value you read:
+    int pLux = map(lux, 0, 1023, 0, 100);
     Serial.println("\nLuminosidade: ");
     Serial.println(lux);
+    Serial.println("\nLuminosidade com MAP: ");
+    Serial.println(pLux);
 }
 
 void receiveData() {
@@ -101,7 +116,7 @@ void receiveData() {
 }
 
 void sendData() {
-    arduinoMaster.sendData(); 
+    arduinoMaster.sendData();
 }
 
 void setup() {

@@ -10,22 +10,21 @@
  *Variavel 0 -> valor da saida para o IC 0
  *Variavel 1 -> valor da saida para o IC 1
  *Variavel 2 -> valor da saida para o IC 2
- *Variavel 3
- *Variavel 4
- *Variavel 5
+ *Variavel 3 -> valor do portal AdaFruit para stualizar o IC 0
+ *Variavel 4 -> valor do portal AdaFruit para stualizar o IC 1
+ *Variavel 5 -> valor do portal AdaFruit para stualizar o IC 2
  *Variavel 6
  *Variavel 7
- *Variavel 8 -> variavel usada para atualizar valores do slave quando houver mudança na nuven
+ *Variavel 8
  *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
 */
 
 #include <A2a.h>
 
-#define boolArduinodSlave 8        //variavel usada para atualizar valores do slave quando houver mudança na nuven
 #define boolArduinoMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
 // Definições de Labels
-#define nICs  1              //Registra o número de CIs cascateados
+#define nICs  3              //Registra o número de CIs cascateados
 #define BYTES 8
 #define readTime 50          //Registra o tempo de que deverá ter o pulso para leitura e gravação, (milesegundos)
 #define DELAY  100           //Registra o atraso de segurança entre leituras, (milesegundos)
@@ -192,7 +191,7 @@ void alterOut(){
 
 void checkStatusMaster(){
     for (int i = 0; i < nICs; ++i){
-        if(arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3)){
+        if(!alterSlave && (arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3))){
             arduinoMaster.varWireRead(i) = arduinoMaster.varWireRead(i + 3)
             alterMaster = true;
         }
