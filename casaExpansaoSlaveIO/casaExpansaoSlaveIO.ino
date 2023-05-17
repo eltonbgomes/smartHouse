@@ -192,7 +192,7 @@ void alterOut(){
 void checkStatusMaster(){
     for (int i = 0; i < nICs; ++i){
         if(!alterSlave && (arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3))){
-            arduinoMaster.varWireRead(i) = arduinoMaster.varWireRead(i + 3)
+            arduinoMaster.varWireWrite(i, arduinoMaster.varWireRead(i + 3));
             alterMaster = true;
         }
     }
@@ -237,6 +237,7 @@ void setup(){
         pinValues[i] = 0;
         oldPinValues[i] = 0;
         arduinoMaster.varWireWrite(i, 0);
+        arduinoMaster.varWireWrite(i + 3, 0);
         helpOut[i] = 0;
         helpOutBool[i] = false;
     }
