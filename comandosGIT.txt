@@ -1,0 +1,113 @@
+//configura email
+git config --global user.email eltonbarbosagomes@gmail.com
+
+//configura usuário
+git config --global user.name Elton Barbosa Gomes
+
+
+
+
+
+
+Para começar instale o GIT, abra um repositorio com algum nome "ecomerce", após vá até
+alguma pasta e inicalize o repositorio.
+
+
+
+//Inicializa um repositório vazio dentro de uma pasta vazia
+git init
+
+//adciona o endereco do repositorio remoto
+git remote add origin https://github.com/eltonbgomes/ecommerce
+
+
+//faz download do repositorio remoto no local
+git pull origin master
+
+
+//para atualizar
+
+//status dos arquivos
+git status
+
+//adciona todos os arquivos para serem rastreados
+git add .
+
+//adiciona um comentario para seu upload, e estará pronto para UPLOAD
+git commit -m 'projeto inicial'
+
+
+//faz UPLOAD para o repositorio remoto
+$ git push origin master
+
+
+
+
+//escreverá estacionamento no readme.md
+echo "# estacionamento" >> README.md 
+
+//tela grafica para mostrar os commits
+$ gitk
+
+
+#mostra todos os commits
+git log
+
+#cria uma branch
+git branch NOMEDABRANCH
+
+#cria e muda para a branck criada
+git checkout -b NOMEDABRANCH
+
+#deleta uma branch
+git branch -D NOMEDABRANCH
+
+#muda para a Branch
+git checkout NOMEDABRANCH
+
+#mostra as branches
+git branch
+
+
+#a partir do momento que está na branch, todos os arquivos inseridos na pastas irão para ela
+
+
+
+
+## apartir daqui os comandos não foram testados
+
+#adicionar um arquivo e fazer o commit em apenas um passo
+git commit -a -m "comentario"
+
+#mostra os repositorios remotos
+git remote -v
+
+#consultar commits e caracteristicas abreviadas
+git log --stat
+
+#comando para ver repositorio remoto
+git remote
+
+#juntar arquivos de duas branches sem gerar um novo evento
+git rebase nomeDoArquivo
+
+# marcar compromissos específicos
+git tag ‘TEXTO’
+
+#unir branch
+git merge NOMEDABRANCH
+
+#'resetar' as alterações de um arquivo
+git checkout -- NOME_DO_ARQUIVO
+
+# ver as modificações feitas no arquivo
+git diff NOME_DO_ARQUIVO
+
+#editar a mensagem do último commit
+git commit --amend
+
+# comando você utiliza para retirar um arquivo adicionado para commitar (após utilizar git add)
+git reset HEAD NOME_DO_ARQUIVO
+
+#Quais dados do commit são listados quando o comando 'git log' é usado?
+O id, a branch, a data, o e-mail e o nome do autor.
