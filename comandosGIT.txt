@@ -3,6 +3,7 @@ git config --global user.email eltonbarbosagomes@gmail.com
 
 //configura usuário
 git config --global user.name Elton Barbosa Gomes
+git config --global user.name Camila Cunha Silva
 
 
 
