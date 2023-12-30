@@ -25,11 +25,13 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+//Registra o número de CIs cascateados
+#define nICs 3
 // DEFINIÇÃO DO ENDEREÇO DO SLAVE
 #define address 0x09
 
 //numero de sensores de temperatura
-#define nTempSensors 4
+#define nTempSensors 2
 
 //Porta sensor temperatura
 #define pinDataTemp 2
@@ -130,7 +132,7 @@ void setup() {
 
     readTemp();
 
-/*     //configuracao do sensor biometrico
+    //configuracao do sensor biometrico
     pinMode(pinOutputLockDoor, OUTPUT);
     digitalWrite(pinOutputLockDoor, LOW);
     pinMode(pinInputLockSensor, INPUT);
@@ -154,12 +156,12 @@ void setup() {
         }
     }
     delay(delayTime);
-    digitalWrite(pinOutputBioSensor, LOW); */
+    digitalWrite(pinOutputBioSensor, LOW);
 }
 
 void loop() {
 
-/*     //condição para travar a porta
+    //condição para travar a porta
     if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinInputLockSensor) == HIGH && digitalRead(pinInputButtonLock) == HIGH){
         delay(delayTime*3);
         if(digitalRead(pinInputLockSensor) == HIGH){
@@ -185,10 +187,10 @@ void loop() {
     //condição para desligar o sensor biometrico
     if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinOutputBioSensor) == HIGH){
         digitalWrite(pinOutputBioSensor, LOW);
-    } */
+    }
 
     //fazer a leiura dos sensores
-    if(millis() - time > 2000){
+    if(millis() - time > 45000){
         readTemp();
     }
 }

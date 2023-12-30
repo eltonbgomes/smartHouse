@@ -40,13 +40,19 @@ const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock I
 //inicialização das variaveis onde serão armazenados os status
 byte pinValues[nICs];
 byte oldPinValues[nICs];
+byte pinValuesOut[nICs];
 byte helpOut[nICs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
 bool helpOutBool[nICs];
 
 bool alterSlave = false; //variavel para alterar as saidas
 bool alterMaster = false; //variavel para alterar no Master e enviar para nuvem
 
+//auxiliares para converter bases
+bool helpBin[BYTES];
+bool bin[BYTES];
+
 //auxiliares para impedir o acesso de condicionais quando ocorrer o desligamento por tempo
+bool helpEsp = false;
 bool helpByte = false;
 bool helpAll = false;
 
@@ -102,7 +108,7 @@ void read_shift_regs(){
             time = millis();
             helpOut[IC] = bytesValOut[IC];
             helpOutBool[IC] = true;
-            helpByte = helpAll = true;
+            helpEsp = helpByte = helpAll = true;
             oldPinValues[IC] = pinValues[IC];
         }
 
@@ -115,8 +121,26 @@ void read_shift_regs(){
             helpOutBool[IC] = false;
         }
 
+        //condiçao para funcionar apenas com o botao 07 IC 0
+        if((millis() - time) > buttonTime && helpOutBool[IC] && helpEsp && pinValues[IC] == 128 && IC == 0){
+            convDecBin(IC); // converte o valor decimal para binario
+            
+            //desliga as saidas desejadas
+            helpBin[7] = 0;
+            helpBin[6] = 0;
+            
+            //inversao
+            for(int i = 0; i < BYTES; i++){    
+                bin[i] = helpBin[BYTES - i - 1];
+            }
+            arduinoMaster.varWireWrite(IC, convBinDec());
+            helpOut[IC] = arduinoMaster.varWireRead(IC);
+            helpEsp = false;
+            alterSlave = true;
+        }
+
         //desliga as saidas após tempo pressionado
-        if((millis() - time) > buttonTime && helpOutBool[IC] && helpByte){
+        if((millis() - time) > buttonTime * 2 && helpOutBool[IC] && helpByte){
             arduinoMaster.varWireWrite(IC, 0);
             helpOut[IC] = arduinoMaster.varWireRead(IC);
             helpByte = false;
@@ -124,7 +148,7 @@ void read_shift_regs(){
         }
 
         //desliga todas as saidas após tempo pressionado
-        if((millis() - time) > buttonTime * 2 && helpOutBool[IC] && helpAll){
+        if((millis() - time) > buttonTime * 3 && helpOutBool[IC] && helpAll){
             for(int i = 0; i < nICs; i++){
                 arduinoMaster.varWireWrite(i, 0);
             }
@@ -133,6 +157,27 @@ void read_shift_regs(){
             alterSlave = true;
         }
     }
+}
+
+void convDecBin (int IC){
+    for(int i = 0; i < BYTES; i++){
+        helpBin[i] = 0; 
+    }
+    int decimal = arduinoMaster.varWireRead(IC);;
+    int i;
+    for(i = 0; (decimal > 1); i++){
+        helpBin[i] = decimal % 2;
+        decimal /= 2; 
+    }
+    helpBin[i] = decimal;
+}
+
+int convBinDec(){
+    float dec = 0;
+    for(int i = 0; i < BYTES; i++){
+        dec += bin[i]*pow(2, 7 - i);
+    }
+    return (int)(dec + 1);
 }
 
 void alterOut(){
@@ -206,7 +251,7 @@ void loop(){
 
     read_shift_regs();
 
-    /* checkStatusMaster(); */
+    checkStatusMaster();
     
     //altera a saída se existir alguma mudança
     if(alterSlave){
