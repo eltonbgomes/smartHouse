@@ -1,6 +1,6 @@
 /*
      CÓDIGO:  Q0589-Master
-     AUTOR:   BrincandoComIdeias
+     AUTOR:   Elton Barbosa Gomes
      LINK:    https://www.youtube.com/brincandocomideias ; https://cursodearduino.net/ ; https://cursoderobotica.net
      COMPRE:  https://www.arducore.com.br/
 	 SKETCH:  Integrando Variaveis entre 2 Arduinos - Esp01 Master
