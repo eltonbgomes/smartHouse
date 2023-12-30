@@ -17,9 +17,21 @@
  *Variavel 7
  *Variavel 8
  *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
+ *Variavel 10 -> temperatura externa HighByte
+ *Variavel 11 -> temperatura externa LowByte
+ *Variavel 12 -> temperatura interna HighByte
+ *Variavel 13 -> temperatura interna LowByte
+ *Variavel 14 ->
+ *Variavel 15 ->
+ *Variavel 16
+ *Variavel 17
+ *Variavel 18
+ *Variavel 19 -> variavel usada para atualizar valores do master quando houver mudança no I2C
 */
 
 #include <A2a.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define boolArduinoMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
@@ -32,27 +44,25 @@
 #define buttonTime 750       //tempo de intervalo segura botao
 
 // Declaração de constantes globais 165
-const int ploadPin165        = 6;    //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
-const int clockEnablePin165  = 5;    //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
+const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
+const int clockEnablePin165  = 5;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
 const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial output from the last stage)(Q7)
 const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
+
+const int pinDataTemp        = 9;   //Sensor temperatura
+
+int nTempSensors = 0; //quantidade de sensores
 
 //inicialização das variaveis onde serão armazenados os status
 byte pinValues[nICs];
 byte oldPinValues[nICs];
-byte pinValuesOut[nICs];
 byte helpOut[nICs]; // variavel usada para armazenar valores das saídas para serem alteradas na borda de descida
 bool helpOutBool[nICs];
 
 bool alterSlave = false; //variavel para alterar as saidas
 bool alterMaster = false; //variavel para alterar no Master e enviar para nuvem
 
-//auxiliares para converter bases
-bool helpBin[BYTES];
-bool bin[BYTES];
-
 //auxiliares para impedir o acesso de condicionais quando ocorrer o desligamento por tempo
-bool helpEsp = false;
 bool helpByte = false;
 bool helpAll = false;
 
@@ -63,9 +73,31 @@ const int dataPin595  = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada 
 
 //usado para contar o tempo do botao pressionado
 unsigned long time;
+unsigned long timeTemp; //time para temperatura
 
 //inicia objeto para comunicacao arduino
 A2a arduinoMaster;
+
+OneWire oneWire(pinDataTemp);
+DallasTemperature sensor(&oneWire);
+
+void saveData(float data, int a, int b){ //data = dados, a e b são locais onde são salvos
+    int dataInt = data * 100;
+    arduinoMaster.varWireWrite(a, highByte(dataInt));
+    arduinoMaster.varWireWrite(b, lowByte(dataInt));
+}
+
+void readTemp(){
+    float tempC[nTempSensors];
+    sensor.requestTemperatures();
+    for (int i = 0;  i < nTempSensors;  i++) {
+        tempC[i] = sensor.getTempCByIndex(i);
+        if(i == 1 || i == 3){
+            saveData((tempC[i - 1] + tempC[i])/2, i - 1 , i); //media
+        }
+    }
+    timeTemp = millis();
+}
 
 //Função para definir um rotina shift-in, lê os dados do 74HC165
 void read_shift_regs(){
@@ -108,7 +140,7 @@ void read_shift_regs(){
             time = millis();
             helpOut[IC] = bytesValOut[IC];
             helpOutBool[IC] = true;
-            helpEsp = helpByte = helpAll = true;
+            helpByte = helpAll = true;
             oldPinValues[IC] = pinValues[IC];
         }
 
@@ -121,26 +153,8 @@ void read_shift_regs(){
             helpOutBool[IC] = false;
         }
 
-        //condiçao para funcionar apenas com o botao 07 IC 0
-        if((millis() - time) > buttonTime && helpOutBool[IC] && helpEsp && pinValues[IC] == 128 && IC == 0){
-            convDecBin(IC); // converte o valor decimal para binario
-            
-            //desliga as saidas desejadas
-            helpBin[7] = 0;
-            helpBin[6] = 0;
-            
-            //inversao
-            for(int i = 0; i < BYTES; i++){    
-                bin[i] = helpBin[BYTES - i - 1];
-            }
-            arduinoMaster.varWireWrite(IC, convBinDec());
-            helpOut[IC] = arduinoMaster.varWireRead(IC);
-            helpEsp = false;
-            alterSlave = true;
-        }
-
         //desliga as saidas após tempo pressionado
-        if((millis() - time) > buttonTime * 2 && helpOutBool[IC] && helpByte){
+        if((millis() - time) > buttonTime && helpOutBool[IC] && helpByte){
             arduinoMaster.varWireWrite(IC, 0);
             helpOut[IC] = arduinoMaster.varWireRead(IC);
             helpByte = false;
@@ -148,7 +162,7 @@ void read_shift_regs(){
         }
 
         //desliga todas as saidas após tempo pressionado
-        if((millis() - time) > buttonTime * 3 && helpOutBool[IC] && helpAll){
+        if((millis() - time) > buttonTime * 2 && helpOutBool[IC] && helpAll){
             for(int i = 0; i < nICs; i++){
                 arduinoMaster.varWireWrite(i, 0);
             }
@@ -157,27 +171,6 @@ void read_shift_regs(){
             alterSlave = true;
         }
     }
-}
-
-void convDecBin (int IC){
-    for(int i = 0; i < BYTES; i++){
-        helpBin[i] = 0; 
-    }
-    int decimal = arduinoMaster.varWireRead(IC);;
-    int i;
-    for(i = 0; (decimal > 1); i++){
-        helpBin[i] = decimal % 2;
-        decimal /= 2; 
-    }
-    helpBin[i] = decimal;
-}
-
-int convBinDec(){
-    float dec = 0;
-    for(int i = 0; i < BYTES; i++){
-        dec += bin[i]*pow(2, 7 - i);
-    }
-    return (int)(dec + 1);
 }
 
 void alterOut(){
@@ -216,6 +209,9 @@ void setup(){
     arduinoMaster.onReceive(receiveData);
     arduinoMaster.onRequest(sendData);
 
+    sensor.begin();
+    nTempSensors = sensor.getDeviceCount();
+
     arduinoMaster.varWireWrite(boolArduinoMaster, false);
     
     //Inicializa e configura os pinos do 165
@@ -250,6 +246,10 @@ void loop(){
     //Lê todos as portas externas
 
     read_shift_regs();
+
+    if(millis() - timeTemp > 10000){
+        readTemp();
+    }
 
     checkStatusMaster();
     

@@ -25,13 +25,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-//Registra o número de CIs cascateados
-#define nICs 3
 // DEFINIÇÃO DO ENDEREÇO DO SLAVE
-#define address 0x09
-
-//numero de sensores de temperatura
-#define nTempSensors 2
+#define address 0x11
 
 //Porta sensor temperatura
 #define pinDataTemp 2
@@ -47,8 +42,7 @@
 
 #define delayTime 1000
 
-#define address 0x09         //address usado na comunicacao I2C entre arduino
-
+int nTempSensors = 0;
 int lux = 0;
 
 // INSTANCIANDO OBJETOS
@@ -59,7 +53,6 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 OneWire oneWire(pinDataTemp);
 DallasTemperature sensor(&oneWire);
  
-float tempC[nTempSensors];
 unsigned long time;
 
 A2a arduinoMaster;
@@ -88,6 +81,7 @@ int getFingerprintID() {
 }
 
 void readTemp(){
+    float tempC[nTempSensors];
     sensor.requestTemperatures();
     for (int i = 0;  i < nTempSensors;  i++) {
         Serial.print("Sensor ");
@@ -97,6 +91,13 @@ void readTemp(){
         Serial.print(tempC[i]);
         Serial.println("ºC");
     }
+    Serial.print("Temperatura interna: ");
+    Serial.print((tempC[0] + tempC[1])/2);
+    Serial.println("");
+    Serial.print("Temperatura externa: ");
+    Serial.print((tempC[2] + tempC[3])/2);
+    Serial.println("");
+    
     readLux();
     time = millis();
 }
@@ -121,6 +122,7 @@ void sendData() {
 
 void setup() {
     Serial.begin(9600);
+    Serial.println("Begin Setup ");
     // INICIA A COMUNICAÇÃO ENTRE ARDUINOS
     arduinoMaster.begin(address);
 
@@ -129,10 +131,16 @@ void setup() {
     arduinoMaster.onRequest(sendData);
 
     sensor.begin();
+    nTempSensors = sensor.getDeviceCount();
+    Serial.print("Encontrados ");
+    Serial.print(nTempSensors, DEC);
+    Serial.println(" dispositivos.");
 
     readTemp();
 
     //configuracao do sensor biometrico
+    pinMode(12, OUTPUT);
+    digitalWrite(12, LOW);
     pinMode(pinOutputLockDoor, OUTPUT);
     digitalWrite(pinOutputLockDoor, LOW);
     pinMode(pinInputLockSensor, INPUT);
@@ -143,7 +151,7 @@ void setup() {
     //pino sensor de luminosidade
     pinMode(pinAnalogLuxSensor,INPUT);
 
-    finger.begin(57600);
+    /* finger.begin(57600);
 
     bool checkFinger = false;
     while(!checkFinger){
@@ -154,14 +162,15 @@ void setup() {
             Serial.println("Sensor biometrico não encontrado! Verifique a conexão e reinicie o sistema");
             delay(delayTime*1.5);
         }
-    }
+    } */
     delay(delayTime);
     digitalWrite(pinOutputBioSensor, LOW);
+    Serial.println("END Setup ");
 }
 
 void loop() {
 
-    //condição para travar a porta
+    /* //condição para travar a porta
     if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinInputLockSensor) == HIGH && digitalRead(pinInputButtonLock) == HIGH){
         delay(delayTime*3);
         if(digitalRead(pinInputLockSensor) == HIGH){
@@ -187,10 +196,14 @@ void loop() {
     //condição para desligar o sensor biometrico
     if(digitalRead(pinOutputLockDoor) == HIGH && digitalRead(pinOutputBioSensor) == HIGH){
         digitalWrite(pinOutputBioSensor, LOW);
-    }
+    } */
 
     //fazer a leiura dos sensores
-    if(millis() - time > 45000){
+    if(millis() - time > 2000){
         readTemp();
     }
+    digitalWrite(12, LOW);
+    delay(1500);
+    digitalWrite(12, HIGH);
+    delay(1500);
 }
