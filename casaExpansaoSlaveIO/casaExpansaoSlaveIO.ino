@@ -1,8 +1,8 @@
 /********************************************************************************\
- * Programa Expansão de Entradas e saídas do Arduino, utilizando Shift Register *
+ * Expansão de Entradas e saídas do Arduino, utilizando Shift Register *
  * CI utilizado: 74HC165 com 74HC595                                            *
  * Por: Elton Barbosa Gomes                                                     *
- * Data: 28/09/2020                                                             *
+ * Data: 31/12/2023                                                             *
  * Créditos: Baseado no playground.arduino.cc                                   *
 \********************************************************************************/
 
@@ -15,14 +15,14 @@
  *Variavel 5 -> valor do portal AdaFruit para stualizar o IC 2
  *Variavel 6
  *Variavel 7
- *Variavel 8
- *Variavel 9 -> variavel usada para atualizar valores do master quando houver mudança no I2C
+ *Variavel 8 -> variavel usada para atualizar valores do master (ESP) quando houver mudança no slave (UNO)
+ *Variavel 9 -> variavel usada para atualizar valores do slave (UNO) quando houver mudança no master (ESP)
  *Variavel 10 -> temperatura externa HighByte
  *Variavel 11 -> temperatura externa LowByte
  *Variavel 12 -> temperatura interna HighByte
  *Variavel 13 -> temperatura interna LowByte
- *Variavel 14 ->
- *Variavel 15 ->
+ *Variavel 14 -> luminosidade HighByte
+ *Variavel 15 -> luminosidade LowByte
  *Variavel 16
  *Variavel 17
  *Variavel 18
@@ -33,7 +33,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define boolArduinoMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
+#define boolMaster 8
+#define boolFinishedMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
 //74hc165
 // Definições de Labels
 #define nICs  3              //Registra o número de CIs cascateados
@@ -43,6 +44,11 @@
 #define address 0x08         //address usado na comunicacao I2C entre arduino
 #define buttonTime 750       //tempo de intervalo segura botao
 
+// Declaração de constantes globais 595
+const int clockPin595        = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
+const int latchPin595        = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
+const int dataPin595         = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
+
 // Declaração de constantes globais 165
 const int ploadPin165        = 6;   //Conecta ao pino 1 do 74HC165 (LH/LD - asynchronous parallel load input)(PL)
 const int clockEnablePin165  = 5;   //Conecta ao pino 15 do 74HC165 (CE - Clock Enable Input)(CE)
@@ -50,6 +56,10 @@ const int dataPin165         = 8;   //Conecta ao pino 9 do 74HC165 (Q7 - serial 
 const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock Input)(CP)
 
 const int pinDataTemp        = 9;   //Sensor temperatura
+
+const int offline            = 12; //desabilitar ESP
+
+const int pinAnalogLuxSensor = A0;
 
 int nTempSensors = 0; //quantidade de sensores
 
@@ -66,14 +76,9 @@ bool alterMaster = false; //variavel para alterar no Master e enviar para nuvem
 bool helpByte = false;
 bool helpAll = false;
 
-// Declaração de constantes globais 595
-const int clockPin595 = 2; //Pino conectado a SRCLK (pino 11 no 74HC595), registrador de deslocamento
-const int latchPin595 = 3; //Pino conectado a RCLK (pino 12 no 74HC595), registrador de armazenamento
-const int dataPin595  = 4; //Pino conectado a SER (pino 14 no 74HC595), entrada de dados serial
-
 //usado para contar o tempo do botao pressionado
 unsigned long time;
-unsigned long timeTemp; //time para temperatura
+unsigned long timeTemp = millis(); //time para temperatura
 
 //inicia objeto para comunicacao arduino
 A2a arduinoMaster;
@@ -83,8 +88,8 @@ DallasTemperature sensor(&oneWire);
 
 void saveData(float data, int a, int b){ //data = dados, a e b são locais onde são salvos
     int dataInt = data * 100;
-    arduinoMaster.varWireWrite(a, highByte(dataInt));
-    arduinoMaster.varWireWrite(b, lowByte(dataInt));
+    arduinoMaster.varWireWrite(a + 10, highByte(dataInt));
+    arduinoMaster.varWireWrite(b + 10, lowByte(dataInt));
 }
 
 void readTemp(){
@@ -96,7 +101,19 @@ void readTemp(){
             saveData((tempC[i - 1] + tempC[i])/2, i - 1 , i); //media
         }
     }
+    readLux();
     timeTemp = millis();
+}
+
+void readLux(){
+    int lux = analogRead(pinAnalogLuxSensor);
+    // print out the value you read:
+    int pLux = map(lux, 0, 1023, 0, 100);
+    /* Serial.println("\nLuminosidade: ");
+    Serial.println(lux);
+    Serial.println("\nLuminosidade com MAP: ");
+    Serial.println(pLux); */
+    saveData(lux, 4, 5);
 }
 
 //Função para definir um rotina shift-in, lê os dados do 74HC165
@@ -180,11 +197,12 @@ void alterOut(){
         shiftOut(dataPin595, clockPin595, LSBFIRST, arduinoMaster.varWireRead(i));
         digitalWrite(latchPin595, HIGH);
     }
+    delay(DELAY*5);
 }
 
 void checkStatusMaster(){
     for (int i = 0; i < nICs; ++i){
-        if(!alterSlave && (arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3))){
+        if(arduinoMaster.varWireRead(i) != arduinoMaster.varWireRead(i + 3)){
             arduinoMaster.varWireWrite(i, arduinoMaster.varWireRead(i + 3));
             alterMaster = true;
         }
@@ -212,7 +230,8 @@ void setup(){
     sensor.begin();
     nTempSensors = sensor.getDeviceCount();
 
-    arduinoMaster.varWireWrite(boolArduinoMaster, false);
+    arduinoMaster.varWireWrite(boolMaster, false);
+    arduinoMaster.varWireWrite(boolFinishedMaster, false);
     
     //Inicializa e configura os pinos do 165
     pinMode(ploadPin165, OUTPUT);
@@ -227,6 +246,10 @@ void setup(){
     pinMode(latchPin595, OUTPUT);
     pinMode(clockPin595, OUTPUT);
     pinMode(dataPin595, OUTPUT);
+
+    pinMode(offline, INPUT);
+
+    pinMode(pinAnalogLuxSensor, INPUT);
 
     //reseta o estado dos pinos
     for(int i = 0; i < nICs; i++){
@@ -245,23 +268,27 @@ void setup(){
 void loop(){
     //Lê todos as portas externas
 
-    read_shift_regs();
+    if(!arduinoMaster.varWireRead(boolFinishedMaster)){
+        read_shift_regs();
+    }
 
     if(millis() - timeTemp > 10000){
         readTemp();
     }
 
-    checkStatusMaster();
-    
+    if(!alterSlave && !digitalRead(offline)){
+        checkStatusMaster();
+    }
+
     //altera a saída se existir alguma mudança
-    if(alterSlave){
-        arduinoMaster.varWireWrite(boolArduinoMaster, true);
+    if(alterSlave && !alterMaster){
+        arduinoMaster.varWireWrite(boolMaster, true);
         alterOut();
         alterSlave = false;
     }
 
     //altera a saída se existir alguma mudança no Master (nuvem)
-    if(alterMaster){
+    if(alterMaster && !alterSlave){
         alterOut();
         alterMaster = false;
     }

@@ -1,18 +1,19 @@
-/*
-     CÓDIGO:  Q0589-Master
-     AUTOR:   Elton Barbosa Gomes
-     LINK:    https://www.youtube.com/brincandocomideias ; https://cursodearduino.net/ ; https://cursoderobotica.net
-     COMPRE:  https://www.arducore.com.br/
-	 SKETCH:  Integrando Variaveis entre 2 Arduinos - Esp01 Master
-     DATA:    26/01/2020
-*/
+/********************************************************************************\
+ * IOT Entradas e saídas do Arduino, utilizando Shift Register *
+ * CI utilizado: 74HC165 com 74HC595                                            *
+ * Por: Elton Barbosa Gomes                                                     *
+ * Data: 31/12/2023                                                             *
+ * Créditos: Baseado no playground.arduino.cc                                   *
+\********************************************************************************/
 
 // INCLUSÃO DE BIBLIOTECAS
 #include <A2a.h>
 #include "config.h"
 
 // DEFINIÇÕES
-#define endereco 0x08
+#define address 0x08
+#define boolMaster 8
+#define boolFinishedMaster 9
 
 // INSTANCIANDO OBJETOS
 AdafruitIO_Feed *ci595_0 = io.feed("ci595_0");
@@ -20,6 +21,7 @@ AdafruitIO_Feed *ci595_1 = io.feed("ci595_1");
 AdafruitIO_Feed *ci595_2 = io.feed("ci595_2");
 AdafruitIO_Feed *tempExt = io.feed("tempExt");
 AdafruitIO_Feed *tempInt = io.feed("tempInt");
+AdafruitIO_Feed *lux = io.feed("lux");
 
 A2a arduinoSlave;
 
@@ -28,15 +30,13 @@ bool getStatusSlaveIO();
 
 void configuraMQTT();
 
-void temperature();
+void temperatureLux();
 
 void retorno_ci595_0(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
 void retorno_ci595_1(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
 void retorno_ci595_2(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
-/* void retorno_temp_Ext(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal
-void retorno_temp_Int(AdafruitIO_Data *data); //funcao necessaria para cada feed do portal */
 
-long temperatureTime;
+long temperatureTime = 	millis();
 
 void setup() {
 	Serial.begin(9600);
@@ -53,10 +53,11 @@ void setup() {
 	ci595_2->get();
 	tempExt->get();
 	tempInt->get();
+	lux->get();
 
 	io.run();
 	
-	temperature();
+	temperatureLux();
 
 	Serial.println("Fim Setup");
 }
@@ -65,45 +66,50 @@ void loop() {
 	io.run();
 
 	if(getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 9, false);
+		arduinoSlave.varWireWrite(address, boolFinishedMaster, true);
+		arduinoSlave.varWireWrite(address, boolMaster, false);
 
-		if(arduinoSlave.varWireRead(endereco, 0) != arduinoSlave.varWireRead(endereco, 3)){
-			ci595_0->save(arduinoSlave.varWireRead(endereco, 0)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(address, 0) != arduinoSlave.varWireRead(address, 3)){
+			ci595_0->save(arduinoSlave.varWireRead(address, 0)); //envia informações para AdaFruit
 		}
 
-		if(arduinoSlave.varWireRead(endereco, 1) != arduinoSlave.varWireRead(endereco, 4)){
-			ci595_1->save(arduinoSlave.varWireRead(endereco, 1)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(address, 1) != arduinoSlave.varWireRead(address, 4)){
+			ci595_1->save(arduinoSlave.varWireRead(address, 1)); //envia informações para AdaFruit
 		}
 
-		if(arduinoSlave.varWireRead(endereco, 2) != arduinoSlave.varWireRead(endereco, 5)){
-			ci595_2->save(arduinoSlave.varWireRead(endereco, 2)); //envia informações para AdaFruit
+		if(arduinoSlave.varWireRead(address, 2) != arduinoSlave.varWireRead(address, 5)){
+			ci595_2->save(arduinoSlave.varWireRead(address, 2)); //envia informações para AdaFruit
 		}
+		arduinoSlave.varWireWrite(address, boolFinishedMaster, false);
 	}
-	if(millis() - temperatureTime > 300000){
-		temperature();
+
+	if(millis() - temperatureTime > 30000){
+		temperatureLux();
 	}
 }
 
-void temperature(){
+void temperatureLux(){
 	byte byteHigh, byteLow;
 	int count = 0;
-	int temp[2];
+	float data[3];
+	int aux;
 	
-	for(int i = 0; i < 3; i += 2){
-		byte byteHigh = arduinoSlave.varWireRead(i);
-		byte byteLow = arduinoSlave.varWireRead(i + 1);
-		unsigned int aux = byteHigh << 8 | byteLow;
-		temp[count] = aux;
-		//temp[count] /= 100;
+	for(int i = 10; i < 15; i += 2){
+		byteHigh = arduinoSlave.varWireRead(address, i);
+		byteLow = arduinoSlave.varWireRead(address, i + 1);
+		int aux = byteHigh << 8 | byteLow;
+		data[count] = aux;
+		data[count] /= 100;
 		count++;
 	}
-	tempExt->save(temp[0]); //envia informações para AdaFruit
-	tempInt->save(temp[1]); //envia informações para AdaFruit
+	tempExt->save(data[0]); //envia informações para AdaFruit
+	tempInt->save(data[1]); //envia informações para AdaFruit
+	lux->save(data[2]); //envia informações para AdaFruit
 	temperatureTime = millis();
 }
 
 bool getStatusSlaveIO(){
-	if(arduinoSlave.varWireRead(endereco, 9)){
+	if(arduinoSlave.varWireRead(address, boolMaster)){
 		return true;
 	}else{
 		return false;
@@ -118,8 +124,6 @@ void configuraMQTT() {
 	ci595_0->onMessage(retorno_ci595_0);
 	ci595_1->onMessage(retorno_ci595_1);
 	ci595_2->onMessage(retorno_ci595_2);
-	/* tempExt->onMessage(retorno_temp_Ext);
-	tempInt->onMessage(retorno_temp_Int); */
 
 	while (io.status() < AIO_CONNECTED) {
 		Serial.print(".");
@@ -135,7 +139,7 @@ void retorno_ci595_0(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 3, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(address, 3, byte(data->toInt())); //envia valor para arduino
 	}
 }
 
@@ -144,7 +148,7 @@ void retorno_ci595_1(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 4, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(address, 4, byte(data->toInt())); //envia valor para arduino
 	}
 }
 
@@ -153,6 +157,6 @@ void retorno_ci595_2(AdafruitIO_Data *data){
 	Serial.println(data->value()); //recebe valor do portal ADAFruit
 
 	if(!getStatusSlaveIO()){
-		arduinoSlave.varWireWrite(endereco, 5, byte(data->toInt())); //envia valor para arduino
+		arduinoSlave.varWireWrite(address, 5, byte(data->toInt())); //envia valor para arduino
 	}
 }
