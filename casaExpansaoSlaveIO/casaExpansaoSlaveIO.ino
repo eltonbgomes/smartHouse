@@ -32,6 +32,7 @@
 #include <A2a.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include "songBell.h"
 
 #define boolMaster 8
 #define boolFinishedMaster 9        //variavel usada para atualizar valores do master quando houver mudança no I2C
@@ -57,7 +58,9 @@ const int clockPin165        = 7;   //Conecta ao pino 2 do 74HC165 (CP - Clock I
 
 const int pinDataTemp        = 9;   //Sensor temperatura
 
-const int offline            = 12; //desabilitar ESP
+const int bellButton         = 11;  //interruptor campainha
+
+const int offline            = 13; //desabilitar ESP
 
 const int pinAnalogLuxSensor = A0;
 
@@ -247,6 +250,9 @@ void setup(){
     pinMode(clockPin595, OUTPUT);
     pinMode(dataPin595, OUTPUT);
 
+    pinMode(bellButton, INPUT);
+    pinMode(bellLockButton, INPUT);
+
     pinMode(offline, INPUT);
 
     pinMode(pinAnalogLuxSensor, INPUT);
@@ -291,6 +297,12 @@ void loop(){
     if(alterMaster && !alterSlave){
         alterOut();
         alterMaster = false;
+    }
+
+    if(digitalRead(bellLockButton)){
+        if(digitalRead(bellButton)){
+            int nSong = song();
+        }
     }
 
     delay(DELAY);
